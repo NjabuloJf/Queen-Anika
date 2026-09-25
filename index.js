@@ -365,6 +365,13 @@ async function connectToWA() {
       }
     })
 
+    const { handleAntiLink } = require('./plugins/antilink');
+
+// inside your messages.upsert listener
+if (msg.key.remoteJid?.endsWith('@g.us')) {
+    await handleAntiLink(msg, conn);
+          }
+    
     // =================== MESSAGE HANDLER ===================
     sock.ev.on('messages.upsert', async (mek) => {
       try {
