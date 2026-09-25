@@ -1,16 +1,4 @@
-<div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,12,23,28,30&height=200&section=header&text=TSALA%20YAME%20BOT&fontSize=42&fontColor=ffffff&fontFamily=Plus+Jakarta+Sans&animation=fadeIn&desc=Next-Gen%20Multi-Device%20WhatsApp%20Automation&descSize=15&descColor=c084fc" width="100%"/>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Node.js-18%2B-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" />
-  <img src="https://img.shields.io/badge/Baileys-MultiDevice-25D366?style=for-the-badge&logo=whatsapp&logoColor=white" />
-  <img src="https://img.shields.io/badge/Express-WebApp-000000?style=for-the-badge&logo=express&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-purple?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Maintained%3F-Yes-cyan?style=for-the-badge" />
-</p>
-
-</div>
 
 ---
 
