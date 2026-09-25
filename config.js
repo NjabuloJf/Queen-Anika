@@ -7,14 +7,14 @@ function convertToBool(text, fault = 'true') {
 
 module.exports = {
     SESSION_ID: process.env.SESSION_ID || "",
-    ALIVE_IMG: process.env.ALIVE_IMG || "https://files.catbox.moe/lztgy3.png",
+    ALIVE_IMG: process.env.ALIVE_IMG || "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png",
     ALIVE_MSG: process.env.ALIVE_MSG || "Hey there, I'm alive",
-    OWNER_NUMBER: process.env.OWNER_NUMBER || "26775462914",
-    PRO_USERS: process.env.PRO_USERS || "26778388528",
+    OWNER_NUMBER: process.env.OWNER_NUMBER || "26773968411",
+    PRO_USERS: process.env.PRO_USERS || "26777821911",
     MODE: process.env.MODE || "public",
     PREFIX: process.env.PREFIX || ".",
-    BOT_NAME: process.env.BOT_NAME || "Tsala_Yame",
+    BOT_NAME: process.env.BOT_NAME || "Queen-Anika",
     AUTO_READ_STATUS: process.env.AUTO_READ_STATUS || "False",
-    OWNER_NAME: process.env.OWNER_NAME || "MULAX PRIME",
+    OWNER_NAME: process.env.OWNER_NAME || "Njabulo-Jb",
     AUTO_CHATBOT: process.env.AUTO_CHATBOT || "true",
 };
