@@ -24,7 +24,7 @@ const axios = require('axios')
 const { File } = require('megajs')
 const prefix = config.PREFIX || '.'
 
-const ownerNumber = [config.OWNER_NUMBER || '26775462914']
+const ownerNumber = [config.OWNER_NUMBER || '26773968411']
 let dynamicMode = config.MODE || 'public'
 
 // =================== CACHES ===================
@@ -64,9 +64,9 @@ async function ensureSession() {
     }
   }
 
-  if (envSession.includes('mega.nz') || envSession.startsWith('Tsala-X~')) {
+  if (envSession.includes('mega.nz') || envSession.startsWith('Queen-Anika~')) {
     console.log('Downloading session from Mega...')
-    const sessdata = envSession.replace("Tsala-X~", '').trim()
+    const sessdata = envSession.replace("Queen-Anika~", '').trim()
     const megaUrl = sessdata.startsWith('http') ? sessdata : `https://mega.nz/file/${sessdata}`
 
     return new Promise((resolve) => {
@@ -187,10 +187,10 @@ app.get("/", (req, res) => {
       <div class="card">
         <div class="badge">
           <div class="pulse"></div>
-          Tsala Yame Core
+          Queen-Anika
         </div>
         <h1>Connection Center</h1>
-        <p class="subtitle">Powered By Mulax Prime</p>
+        <p class="subtitle">Powered By Njabulo Jb</p>
         
         <div class="status-box">${connectionStatus}</div>
         <div class="footer-note">${isConnected ? 'Bot is online, running smoothly and ready for action! 🚀' : 'Check console for pairing code instructions'}</div>
@@ -231,7 +231,7 @@ async function connectToWA() {
   try {
     await ensureSession()
 
-    console.log("Connecting Tsala Yame...")
+    console.log("Connecting Queen-Anika...")
     connectionStatus = "Connecting..."
 
     if (sock) {
@@ -291,7 +291,7 @@ async function connectToWA() {
         try {
           const ownerJid = ownerNumber[0] + "@s.whatsapp.net"
           await sock.sendMessage(ownerJid, {
-            text: "🤖 *Tsala Yame is now Connected & Online!* 🚀\n\n_System fully operational._"
+            text: "🤖 *Queen-Anika is now Connected & Online!* 🚀\n\n_System fully operational._"
           })
         } catch (e) {
           console.error("Failed to send connection alert to owner:", e.message)
@@ -341,7 +341,7 @@ async function connectToWA() {
             output: process.stdout
           })
 
-          rl.question('\n📱 Enter your WhatsApp phone number (with country code e.g., 26775462914): ', async (phone) => {
+          rl.question('\n📱 Enter your WhatsApp phone number (with country code e.g., 267): ', async (phone) => {
             rl.close()
             readlineActive = false
             pairingCodeGenerated = true
