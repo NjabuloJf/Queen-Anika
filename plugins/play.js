@@ -1,15 +1,15 @@
 /**
- * youtube.js — Play / Download from YouTube
- * Uses cmd() handler. WhatsApp bot.
- * Commands: .play / .song / .audio  →  MP3
- *           .video / .vid / .mp4    →  MP4
+ * play.js
+ * YouTube Audio & Video Downloader
+ * Uses Noobs API.
+ * No fancy font. Plain text.
+ * Includes Document fallback for broken/dark videos.
  */
 
 const { cmd } = require('../command');
-const config = require('../set');
+const config = require("../config"); // 👈 FIXED: was "../set"
 const axios = require('axios');
 const yts = require('yt-search');
-const { tiny } = require('../lib/fancy_font/fancy');
 
 // ========== BRANDING IMAGE ==========
 const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
@@ -41,20 +41,20 @@ async (conn, mek, m, { from, sender, reply, args }) => {
     try {
         const query = args.join(' ').trim();
         if (!query) {
-            return reply(tiny(
+            return reply(
 `⚠️ *Please provide a song name or YouTube link!*
 
 📌 Example:
 .play shape of you
 .play https://youtu.be/xxxxx`
-            ));
+            );
         }
 
-        await conn.sendMessage(from, { text: tiny("🎧 Searching audio...") }, { quoted: mek });
+        await conn.sendMessage(from, { text: "🎧 Searching audio..." }, { quoted: mek });
 
         const search = await yts(query);
         if (!search.videos.length) {
-            return reply(tiny("❌ Song not found."));
+            return reply("❌ Song not found.");
         }
 
         const video = search.videos[0];
@@ -68,7 +68,7 @@ async (conn, mek, m, { from, sender, reply, args }) => {
 
         const { data } = await axios.get(apiURL, { timeout: 30000 });
         if (!data || !data.downloadLink) {
-            return reply(tiny("❌ Failed to retrieve the audio download link."));
+            return reply("❌ Failed to retrieve the audio download link.");
         }
 
         const caption =
@@ -84,13 +84,13 @@ async (conn, mek, m, { from, sender, reply, args }) => {
         try {
             await conn.sendMessage(from, {
                 image: { url: video.thumbnail },
-                caption: tiny(caption),
+                caption: caption,
                 contextInfo: ctxInfo()
             }, { quoted: mek });
         } catch (e) {
             console.log('[PLAY] Thumbnail failed, sending text only');
             await conn.sendMessage(from, {
-                text: tiny(caption),
+                text: caption,
                 contextInfo: ctxInfo()
             }, { quoted: mek });
         }
@@ -106,7 +106,7 @@ async (conn, mek, m, { from, sender, reply, args }) => {
 
     } catch (error) {
         console.error('[PLAY] Error:', error.message);
-        reply(tiny(`❌ Error: ${error.message}`));
+        reply(`❌ Error: ${error.message}`);
     }
 });
 
@@ -125,20 +125,20 @@ async (conn, mek, m, { from, sender, reply, args }) => {
     try {
         const query = args.join(' ').trim();
         if (!query) {
-            return reply(tiny(
+            return reply(
 `⚠️ *Please provide a video name or YouTube link!*
 
 📌 Example:
 .video shape of you
 .video https://youtu.be/xxxxx`
-            ));
+            );
         }
 
-        await conn.sendMessage(from, { text: tiny("🎬 Searching video...") }, { quoted: mek });
+        await conn.sendMessage(from, { text: "🎬 Searching video..." }, { quoted: mek });
 
         const search = await yts(query);
         if (!search.videos.length) {
-            return reply(tiny("❌ Video not found."));
+            return reply("❌ Video not found.");
         }
 
         const video = search.videos[0];
@@ -152,7 +152,7 @@ async (conn, mek, m, { from, sender, reply, args }) => {
 
         const { data } = await axios.get(apiURL, { timeout: 30000 });
         if (!data || !data.downloadLink) {
-            return reply(tiny("❌ Failed to retrieve the video download link."));
+            return reply("❌ Failed to retrieve the video download link.");
         }
 
         const caption =
@@ -168,28 +168,43 @@ async (conn, mek, m, { from, sender, reply, args }) => {
         try {
             await conn.sendMessage(from, {
                 image: { url: video.thumbnail },
-                caption: tiny(caption),
+                caption: caption,
                 contextInfo: ctxInfo()
             }, { quoted: mek });
         } catch (e) {
             console.log('[VIDEO] Thumbnail failed, sending text only');
             await conn.sendMessage(from, {
-                text: tiny(caption),
+                text: caption,
                 contextInfo: ctxInfo()
             }, { quoted: mek });
         }
 
-        // Send video
-        await conn.sendMessage(from, {
-            video: { url: data.downloadLink },
-            mimetype: 'video/mp4',
-            fileName: fileName,
-            caption: tiny(`🎬 ${video.title}`),
-            contextInfo: ctxInfo()
-        }, { quoted: mek });
+        // ========== FIX: SEND VIDEO WITH DOCUMENT FALLBACK ==========
+        try {
+            // First try sending as a normal Video message
+            await conn.sendMessage(from, {
+                video: { url: data.downloadLink },
+                mimetype: 'video/mp4',
+                fileName: fileName,
+                caption: `🎬 ${video.title}`,
+                contextInfo: ctxInfo()
+            }, { quoted: mek });
+            console.log('[VIDEO] Sent as native video successfully.');
+        } catch (videoError) {
+            console.log('[VIDEO] Native video failed, falling back to document...', videoError.message);
+            // If it fails (dark video / codec issue), send as a Document instead
+            await conn.sendMessage(from, {
+                document: { url: data.downloadLink },
+                mimetype: 'video/mp4',
+                fileName: fileName,
+                caption: `🎬 *${video.title}*\n(Document Format)`,
+                contextInfo: ctxInfo()
+            }, { quoted: mek });
+            console.log('[VIDEO] Sent as document successfully.');
+        }
 
     } catch (error) {
         console.error('[VIDEO] Error:', error.message);
-        reply(tiny(`❌ Error: ${error.message}`));
+        reply(`❌ Error: ${error.message}`);
     }
 });
