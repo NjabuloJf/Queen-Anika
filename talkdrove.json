@@ -1,9 +1,9 @@
 {
-  "bot-name": "Tsala Yame",
-  "description": "Whatsapp bot by Mulax Prime",
-  "logo": "https://files.catbox.moe/kgsd4q.jpeg",
+  "bot-name": "Queen-Anika ",
+  "description": "Whatsapp bot by Njabulo Jb",
+  "logo": "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png",
   "keywords": ["bot"],
-  "documentation-link": "https://github.com/mulaxprime/Tsala_Yame",
+  "documentation-link": "https://github.com/NjabuloJf/Queen-Anika",
   "owner-verification": "amantlempaekae@gmail.com",
   
   "env": {
@@ -13,8 +13,8 @@
       "required": true
     },
       "OWNER_NUMBER": {
-        "description": "OWNER_NUMBER with country code (e.g, 23470324xxxxx)",
-        "value":"234703241xxxx",
+        "description": "OWNER_NUMBER with country code (e.g, 267)",
+        "value":"267",
         "required": true
    },
     "PREFIX": {
