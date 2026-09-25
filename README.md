@@ -2,13 +2,7 @@
 
 ---
 
-<p align="center">
-  <img src="https://files.catbox.moe/lztgy3.png" alt="Tsala Yame Preview" width="85%" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);" />
-</p>
-
----
-
-## ⚡ About Tsala Yame
+## ⚡ About Queen-Anika ctreat by Njabulo Jb BW)(ZW
 
 **Tsala Yame** is a lightning-fast, highly customizable multi-device WhatsApp automation engine. Engineered for fluid group management, seamless media handling, and rich plugin integration, it comes equipped with a gorgeous built-in cyberpunk web control center and dynamic live pairing capabilities.
 
