@@ -1,7 +1,7 @@
 {
-  "name": "tsala-yame",
+  "name": "Queen-Anika",
   "version": "1.0.0",
-  "description": "Tsala Yame WhatsApp bot created using Node.js",
+  "description": "Queen-Anika WhatsApp bot created using Node.js",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
