@@ -1,50 +1,37 @@
 /**
  * antilink.js
  * Anti-link system with warn/delete/remove modes.
- * Uses cmd() handler. No buttons. No translation.
- * Branding image: Queen-Anika.png
+ * Uses cmd() handler + bot's built-in admin/group flags.
+ * No fancy font. Plain text only.
  */
 
 const { cmd } = require('../command');
-const config = require("../set");
-const { tiny } = require("../lib/fancy_font/fancy");
+const config = require("../config");
 
 // ========== BRANDING IMAGE ==========
 const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
 
-// ========== STORE FOR GROUP SETTINGS ==========
+// ========== STORE ==========
 const groupAntiLinkSettings = new Map();
 const userWarnCount = new Map();
 
-// ========== GET GROUP SETTING ==========
 function getGroupAntiLinkSetting(groupId) {
     return groupAntiLinkSettings.get(groupId) || 'off';
 }
-
-// ========== SET GROUP SETTING ==========
 function setGroupAntiLinkSetting(groupId, status) {
     groupAntiLinkSettings.set(groupId, status);
 }
-
-// ========== GET USER WARN COUNT ==========
 function getUserWarnCount(groupId, userId) {
-    const key = `${groupId}_${userId}`;
-    return userWarnCount.get(key) || 0;
+    return userWarnCount.get(`${groupId}_${userId}`) || 0;
 }
-
-// ========== INCREMENT USER WARN COUNT ==========
 function incrementUserWarnCount(groupId, userId) {
     const key = `${groupId}_${userId}`;
-    const current = userWarnCount.get(key) || 0;
-    const newCount = current + 1;
+    const newCount = (userWarnCount.get(key) || 0) + 1;
     userWarnCount.set(key, newCount);
     return newCount;
 }
-
-// ========== RESET USER WARN COUNT ==========
 function resetUserWarnCount(groupId, userId) {
-    const key = `${groupId}_${userId}`;
-    userWarnCount.delete(key);
+    userWarnCount.delete(`${groupId}_${userId}`);
 }
 
 // ========== CONTEXT INFO ==========
@@ -91,28 +78,13 @@ function containsLink(text) {
     return urlPatterns.some(pattern => pattern.test(text));
 }
 
-// ========== HELPER: Send branded message ==========
+// ========== HELPER: send branded message ==========
 async function sendBranded(conn, dest, ms, text) {
     await conn.sendMessage(dest, {
         image: { url: BRAND_IMAGE },
-        caption: tiny(text),
+        caption: text,
         contextInfo: ctxInfo()
     }, { quoted: ms });
-}
-
-// ========== HELPER: Check if group ==========
-function isGroupJid(jid) {
-    return jid && jid.endsWith('@g.us');
-}
-
-// ========== HELPER: Check if sender is admin ==========
-async function isSenderAdmin(conn, groupJid, senderJid) {
-    try {
-        const meta = await conn.groupMetadata(groupJid);
-        return meta.participants?.some(p => p.id === senderJid && p.admin);
-    } catch (e) {
-        return false;
-    }
 }
 
 // ═════════════════════════════════════════════════════════════
@@ -126,19 +98,16 @@ cmd({
     react: "⚠️",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply }) => {
+async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner }) => {
     try {
-        if (!isGroupJid(from)) return reply(tiny("🚫 This command is for group use only."));
-        const admin = await isSenderAdmin(conn, from, sender);
-        if (!admin) return reply(tiny("🚫 Only group admins can use this command."));
+        if (!isGroup) return reply("🚫 This command is for group use only.");
+        if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
 
-        const currentSetting = getGroupAntiLinkSetting(from);
-        if (currentSetting === 'warn') {
-            return sendBranded(conn, from, mek, "⚠️ Anti-link is already enabled.");
+        if (getGroupAntiLinkSetting(from) === 'warn') {
+            return sendBranded(conn, from, mek, "⚠️ Anti-link WARN mode is already enabled.");
         }
 
         setGroupAntiLinkSetting(from, 'warn');
-
         for (const key of userWarnCount.keys()) {
             if (key.startsWith(from)) userWarnCount.delete(key);
         }
@@ -151,7 +120,7 @@ Links will be deleted and sender will be warned.
 After 3 warnings, user will be removed.`);
     } catch (e) {
         console.error(e);
-        reply(tiny(`❌ Error: ${e.message}`));
+        reply(`❌ Error: ${e.message}`);
     }
 });
 
@@ -166,19 +135,16 @@ cmd({
     react: "🗑️",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply }) => {
+async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner }) => {
     try {
-        if (!isGroupJid(from)) return reply(tiny("🚫 This command is for group use only."));
-        const admin = await isSenderAdmin(conn, from, sender);
-        if (!admin) return reply(tiny("🚫 Only group admins can use this command."));
+        if (!isGroup) return reply("🚫 This command is for group use only.");
+        if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
 
-        const currentSetting = getGroupAntiLinkSetting(from);
-        if (currentSetting === 'delete') {
-            return sendBranded(conn, from, mek, "⚠️ Anti-link is already enabled.");
+        if (getGroupAntiLinkSetting(from) === 'delete') {
+            return sendBranded(conn, from, mek, "⚠️ Anti-link DELETE mode is already enabled.");
         }
 
         setGroupAntiLinkSetting(from, 'delete');
-
         for (const key of userWarnCount.keys()) {
             if (key.startsWith(from)) userWarnCount.delete(key);
         }
@@ -190,7 +156,7 @@ async (conn, mek, m, { from, sender, reply }) => {
 Links will be deleted automatically.`);
     } catch (e) {
         console.error(e);
-        reply(tiny(`❌ Error: ${e.message}`));
+        reply(`❌ Error: ${e.message}`);
     }
 });
 
@@ -205,19 +171,16 @@ cmd({
     react: "👢",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply }) => {
+async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner }) => {
     try {
-        if (!isGroupJid(from)) return reply(tiny("🚫 This command is for group use only."));
-        const admin = await isSenderAdmin(conn, from, sender);
-        if (!admin) return reply(tiny("🚫 Only group admins can use this command."));
+        if (!isGroup) return reply("🚫 This command is for group use only.");
+        if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
 
-        const currentSetting = getGroupAntiLinkSetting(from);
-        if (currentSetting === 'remove') {
-            return sendBranded(conn, from, mek, "⚠️ Anti-link is already enabled.");
+        if (getGroupAntiLinkSetting(from) === 'remove') {
+            return sendBranded(conn, from, mek, "⚠️ Anti-link REMOVE mode is already enabled.");
         }
 
         setGroupAntiLinkSetting(from, 'remove');
-
         for (const key of userWarnCount.keys()) {
             if (key.startsWith(from)) userWarnCount.delete(key);
         }
@@ -229,7 +192,7 @@ async (conn, mek, m, { from, sender, reply }) => {
 Links will be deleted and sender will be removed from group immediately.`);
     } catch (e) {
         console.error(e);
-        reply(tiny(`❌ Error: ${e.message}`));
+        reply(`❌ Error: ${e.message}`);
     }
 });
 
@@ -243,19 +206,16 @@ cmd({
     react: "🔓",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply }) => {
+async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner }) => {
     try {
-        if (!isGroupJid(from)) return reply(tiny("🚫 This command is for group use only."));
-        const admin = await isSenderAdmin(conn, from, sender);
-        if (!admin) return reply(tiny("🚫 Only group admins can use this command."));
+        if (!isGroup) return reply("🚫 This command is for group use only.");
+        if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
 
-        const currentSetting = getGroupAntiLinkSetting(from);
-        if (currentSetting === 'off') {
+        if (getGroupAntiLinkSetting(from) === 'off') {
             return sendBranded(conn, from, mek, "⚠️ Anti-link is already disabled.");
         }
 
         setGroupAntiLinkSetting(from, 'off');
-
         for (const key of userWarnCount.keys()) {
             if (key.startsWith(from)) userWarnCount.delete(key);
         }
@@ -266,7 +226,7 @@ async (conn, mek, m, { from, sender, reply }) => {
 ✅ Anti-link has been disabled.`);
     } catch (e) {
         console.error(e);
-        reply(tiny(`❌ Error: ${e.message}`));
+        reply(`❌ Error: ${e.message}`);
     }
 });
 
@@ -281,9 +241,9 @@ cmd({
     react: "🔗",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply }) => {
+async (conn, mek, m, { from, sender, reply, isGroup }) => {
     try {
-        if (!isGroupJid(from)) return reply(tiny("🚫 This command is for group use only."));
+        if (!isGroup) return reply("🚫 This command is for group use only.");
 
         const currentSetting = getGroupAntiLinkSetting(from);
         let statusDisplay = "Disabled";
@@ -318,7 +278,7 @@ ${hasWarns ? `\n📊 *Warning Count:*${userWarns}` : ''}`;
         await sendBranded(conn, from, mek, infoText);
     } catch (e) {
         console.error(e);
-        reply(tiny(`❌ Error: ${e.message}`));
+        reply(`❌ Error: ${e.message}`);
     }
 });
 
@@ -333,11 +293,10 @@ cmd({
     react: "🔄",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply }) => {
+async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner }) => {
     try {
-        if (!isGroupJid(from)) return reply(tiny("🚫 This command is for group use only."));
-        const admin = await isSenderAdmin(conn, from, sender);
-        if (!admin) return reply(tiny("🚫 Only group admins can use this command."));
+        if (!isGroup) return reply("🚫 This command is for group use only.");
+        if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
 
         let count = 0;
         for (const key of userWarnCount.keys()) {
@@ -353,7 +312,7 @@ async (conn, mek, m, { from, sender, reply }) => {
 ✅ All warning counts have been reset. (${count} users reset)`);
     } catch (e) {
         console.error(e);
-        reply(tiny(`❌ Error: ${e.message}`));
+        reply(`❌ Error: ${e.message}`);
     }
 });
 
@@ -363,45 +322,44 @@ async (conn, mek, m, { from, sender, reply }) => {
 async function handleAntiLink(message, conn) {
     try {
         const remoteJid = message.key?.remoteJid;
-        if (!remoteJid) return;
-        if (!remoteJid.endsWith('@g.us')) return;
+        if (!remoteJid || !remoteJid.endsWith('@g.us')) return;
 
         const setting = getGroupAntiLinkSetting(remoteJid);
         if (setting === 'off') return;
 
         // Extract text
         let text = '';
-        if (message.message?.conversation) {
-            text = message.message.conversation;
-        } else if (message.message?.extendedTextMessage?.text) {
-            text = message.message.extendedTextMessage.text;
-        } else if (message.message?.imageMessage?.caption) {
-            text = message.message.imageMessage.caption;
-        } else if (message.message?.videoMessage?.caption) {
-            text = message.message.videoMessage.caption;
-        } else if (message.message?.documentMessage?.caption) {
-            text = message.message.documentMessage.caption;
-        }
+        if (message.message?.conversation) text = message.message.conversation;
+        else if (message.message?.extendedTextMessage?.text) text = message.message.extendedTextMessage.text;
+        else if (message.message?.imageMessage?.caption) text = message.message.imageMessage.caption;
+        else if (message.message?.videoMessage?.caption) text = message.message.videoMessage.caption;
+        else if (message.message?.documentMessage?.caption) text = message.message.documentMessage.caption;
 
         if (!text || !containsLink(text)) return;
 
-        // Check admin status
         const groupMetadata = await conn.groupMetadata(remoteJid);
         const sender = message.key?.participant || message.key?.remoteJid;
-        const isAdmin = groupMetadata.participants?.some(p => p.id === sender && p.admin);
+
+        // Robust admin check (handles device suffix + LID)
+        const senderNum = String(sender).split('@')[0].split(':')[0];
+        const found = groupMetadata.participants?.find(p => {
+            const pIdNum = (p.id || '').split('@')[0].split(':')[0];
+            const pLidNum = (p.lid || '').split('@')[0].split(':')[0];
+            return pIdNum === senderNum || pLidNum === senderNum;
+        });
+        const isAdmin = found && (found.admin === 'admin' || found.admin === 'superadmin');
         if (isAdmin) return;
 
-        // Delete the offending message
+        // Delete the message
         await conn.sendMessage(remoteJid, {
             delete: {
-                remoteJid: remoteJid,
+                remoteJid,
                 fromMe: false,
                 id: message.key.id,
                 participant: message.key.participant
             }
         });
 
-        // Handle by mode
         if (setting === 'warn') {
             const warnCount = incrementUserWarnCount(remoteJid, sender);
             await conn.sendMessage(remoteJid, {
@@ -426,7 +384,7 @@ async function handleAntiLink(message, conn) {
                 }
             }
         } else if (setting === 'delete') {
-            // Already deleted
+            // silently deleted
         } else if (setting === 'remove') {
             try {
                 await conn.groupParticipantsUpdate(remoteJid, [sender], "remove");
@@ -447,7 +405,7 @@ async function handleAntiLink(message, conn) {
     }
 }
 
-// ========== EXPORT FUNCTIONS ==========
+// ========== EXPORTS ==========
 module.exports = {
     handleAntiLink,
     getGroupAntiLinkSetting,
