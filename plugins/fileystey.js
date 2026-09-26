@@ -295,7 +295,7 @@ async (conn, mek, m, { from, reply, pushname }) => {
         await conn.sendMessage(from, {
             image: { url: BRAND_IMAGE },
             caption: text,
-            
+           contextInfo: ctxInfo() 
         }, { quoted: mek });
     } catch (e) {
         console.error(e);
