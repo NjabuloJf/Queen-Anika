@@ -168,8 +168,9 @@ ${song.album ? `💿 *Album:* ${song.album}\n` : ""}${song.release_date ? `📅 
 
 📥 *Reply with:*
 
- *1*  →  AUDIO 🎵
- *2*  →  VIDEO 🎬`;
+ *1*  →  │〕.AUDIO 🎵
+ *2*  →  │〕.VIDEO 🎬
+ ╰──────────────〔🌸〕`;
 
         await conn.sendMessage(from, {
             image: { url: albumArt },
@@ -248,7 +249,7 @@ async (conn, mek, m, { from, reply, body }) => {
                 mimetype: 'audio/mpeg',
                 fileName: `${safeTitle}.mp3`,
                 ptt: false,
-                contextInfo: ctxInfo()
+               
             }, { quoted: mek });
 
             try { await conn.sendMessage(from, { react: { text: "✅", key: mek.key } }); } catch {}
@@ -274,7 +275,7 @@ async (conn, mek, m, { from, reply, body }) => {
                     mimetype: 'video/mp4',
                     fileName: `${safeTitle}.mp4`,
                     caption: `🎬 *${video.title}*`,
-                    contextInfo: ctxInfo()
+                    
                 }, { quoted: mek });
                 console.log('[Shazam] Sent as native video.');
 
@@ -285,7 +286,7 @@ async (conn, mek, m, { from, reply, body }) => {
                     mimetype: 'video/mp4',
                     fileName: `${safeTitle}.mp4`,
                     caption: `🎬 *${video.title}*\n_(Document format)_`,
-                    contextInfo: ctxInfo()
+                    
                 }, { quoted: mek });
             }
 
