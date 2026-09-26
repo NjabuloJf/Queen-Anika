@@ -21,7 +21,7 @@ function ctxInfo() {
         forwardingScore: 999,
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
-            newsletterJid: '1203634129500689311@newsletter',
+            newsletterJid: '120363402336733732@newsletter',
             newsletterName: 'Queen-Anika'
         }
     };
