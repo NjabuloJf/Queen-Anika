@@ -14,8 +14,16 @@ function ctxInfo() {
         forwardingScore: 999,
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
-            newsletterJid: '1203634129500689311@newsletter',
+            newsletterJid: '120363402336733732@newsletter',
             newsletterName: 'Queen-Anika'
+        },
+        externalAdReply: {
+            title: "Queen-Anika",
+            body: "Ｑｕｅｅｎ-Ａｎｉｋａ ｂｏｔ",
+            thumbnailUrl: "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png",
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false
         }
     };
 }
