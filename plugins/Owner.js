@@ -22,6 +22,14 @@ function ctxInfo() {
         forwardedNewsletterMessageInfo: {
             newsletterJid: '120363402336733732@newsletter',
             newsletterName: 'Queen-Anika'
+        },
+        externalAdReply: {
+            title: "Queen-Anika",
+            body: "Ｑｕｅｅｎ-Ａｎｉｋａ ｂｏｔ",
+            thumbnailUrl: "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png",
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false
         }
     };
 }
