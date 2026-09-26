@@ -1,8 +1,7 @@
 /**
  * welcome.js
  * Group welcome + goodbye system.
- * Commands to enable/disable and customize messages.
- * No fancy font. Plain text. Queen-Anika branding.
+ * Fixed: Handles participants as objects OR strings.
  */
 
 const { cmd } = require('../command');
@@ -12,7 +11,6 @@ const config = require("../config");
 const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
 
 // ========== SETTINGS STORE ==========
-// Structure: groupSettings.set(groupJid, { welcome: {on, message}, goodbye: {on, message} })
 const groupSettings = new Map();
 
 function getSettings(groupId) {
@@ -43,7 +41,17 @@ function ctxInfo() {
     };
 }
 
-// ========== HELPER: send branded message ==========
+// ========== HELPER: Extract JID string safely ==========
+function extractJid(user) {
+    if (!user) return null;
+    if (typeof user === 'string') return user;
+    if (typeof user === 'object') {
+        return user.id || user.jid || user.phoneNumber || null;
+    }
+    return null;
+}
+
+// ========== HELPER: Send branded message ==========
 async function sendBranded(conn, dest, ms, text) {
     await conn.sendMessage(dest, {
         image: { url: BRAND_IMAGE },
@@ -52,7 +60,7 @@ async function sendBranded(conn, dest, ms, text) {
     }, { quoted: ms });
 }
 
-// ========== HELPER: replace placeholders ==========
+// ========== HELPER: Replace placeholders ==========
 function fillTemplate(template, vars) {
     return template
         .replace(/{user}/g, vars.user)
@@ -62,7 +70,7 @@ function fillTemplate(template, vars) {
 }
 
 // ═════════════════════════════════════════════════════════════
-// .welcome — toggle / set / status
+// .welcome COMMAND
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "welcome",
@@ -79,7 +87,6 @@ async (conn, mek, m, { from, reply, args, isGroup, isAdmins, isOwner }) => {
         const settings = getSettings(from);
         const action = (args[0] || '').toLowerCase();
 
-        // .welcome on
         if (action === 'on') {
             settings.welcome.on = true;
             return sendBranded(conn, from, mek,
@@ -93,7 +100,6 @@ ${settings.welcome.message}
 _Use .setwelcome <text> to change it._`);
         }
 
-        // .welcome off
         if (action === 'off') {
             settings.welcome.on = false;
             return sendBranded(conn, from, mek,
@@ -102,9 +108,8 @@ _Use .setwelcome <text> to change it._`);
 ✅ Welcome messages are now OFF for this group.`);
         }
 
-        // .setwelcome <text>  (also .welcome set <text>)
         const setText = action === 'set' ? args.slice(1).join(' ') : args.slice(1).join(' ');
-        if (action === 'set' || args[0]) {
+        if (action === 'set' || (args[0] && action !== 'on' && action !== 'off')) {
             if (!setText) {
                 return reply(
 `📝 *Please provide the welcome message!*
@@ -127,7 +132,6 @@ _Use .setwelcome <text> to change it._`);
 ${settings.welcome.message}`);
         }
 
-        // .welcome  → show status
         return sendBranded(conn, from, mek,
 `👋 *WELCOME STATUS*
 
@@ -147,7 +151,7 @@ ${settings.welcome.message}
 });
 
 // ═════════════════════════════════════════════════════════════
-// .goodbye — toggle / set / status
+// .goodbye COMMAND
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "goodbye",
@@ -165,7 +169,6 @@ async (conn, mek, m, { from, reply, args, isGroup, isAdmins, isOwner }) => {
         const settings = getSettings(from);
         const action = (args[0] || '').toLowerCase();
 
-        // .goodbye on
         if (action === 'on') {
             settings.goodbye.on = true;
             return sendBranded(conn, from, mek,
@@ -179,7 +182,6 @@ ${settings.goodbye.message}
 _Use .setgoodbye <text> to change it._`);
         }
 
-        // .goodbye off
         if (action === 'off') {
             settings.goodbye.on = false;
             return sendBranded(conn, from, mek,
@@ -188,9 +190,8 @@ _Use .setgoodbye <text> to change it._`);
 ✅ Goodbye messages are now OFF for this group.`);
         }
 
-        // .goodbye set <text>
         const setText = action === 'set' ? args.slice(1).join(' ') : args.slice(1).join(' ');
-        if (action === 'set' || args[0]) {
+        if (action === 'set' || (args[0] && action !== 'on' && action !== 'off')) {
             if (!setText) {
                 return reply(
 `📝 *Please provide the goodbye message!*
@@ -212,7 +213,6 @@ _Use .setgoodbye <text> to change it._`);
 ${settings.goodbye.message}`);
         }
 
-        // .goodbye → show status
         return sendBranded(conn, from, mek,
 `👋 *GOODBYE STATUS*
 
@@ -245,8 +245,15 @@ async function handleGroupParticipants(conn, event) {
         const memberCount = groupMetadata?.participants?.length || 0;
         const time = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
 
+        // Ensure participants is an array
+        const userList = Array.isArray(participants) ? participants : [participants];
+
         if (action === 'add' && settings.welcome.on) {
-            for (const userJid of participants) {
+            for (const user of userList) {
+                // 👇 FIX: Extract JID safely (handles both strings and objects)
+                const userJid = extractJid(user);
+                if (!userJid) continue;
+
                 const userNum = userJid.split('@')[0];
                 const text = fillTemplate(settings.welcome.message, {
                     user: `@${userNum}`,
@@ -269,7 +276,11 @@ async function handleGroupParticipants(conn, event) {
         }
 
         if (action === 'remove' && settings.goodbye.on) {
-            for (const userJid of participants) {
+            for (const user of userList) {
+                // 👇 FIX: Extract JID safely (handles both strings and objects)
+                const userJid = extractJid(user);
+                if (!userJid) continue;
+
                 const userNum = userJid.split('@')[0];
                 const text = fillTemplate(settings.goodbye.message, {
                     user: `@${userNum}`,
