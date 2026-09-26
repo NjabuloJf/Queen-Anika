@@ -175,16 +175,16 @@ async function handleDownload(conn, mek, m, { from, reply, args }, platformName)
             if (activeDownloads.has(from)) activeDownloads.delete(from);
         }, 60000);
 
-        const caption =
-`📥 *${platformName.toUpperCase()} DOWNLOADER*
-
-📹 *Title:* ${title}
-
-📌 *Reply with a number to select format:*
-${formatList}
-*(Reply with 1, 2, 3, etc.)*
-
-_🔗 Source: ${apiSource}_`;
+        const caption =`╭─「 *QUEEN-ANIKA* 」
+│〕.📥 *${platformName.toUpperCase()} DOWNLOADER*
+│〕.📹 *Title:* ${title}
+│〕.📌 *Reply with a number to select format:*
+│〕.${formatList}
+│〕.video and audio
+│〕.⇆ㅤ || *[1]*,
+│〕.⇆ㅤ || *[2]*,
+│〕.⇆ㅤ || *[3]*, etc.)*
+╰─────────〔🌸〕`;
 
         await sendBranded(conn, from, mek, caption);
 
