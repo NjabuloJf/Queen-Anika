@@ -17,7 +17,8 @@
 | **🔌 Dynamic Plugins** | Effortless modular plugin architecture with automatic directory loading and counting. |
 | **🛡️ Smart Moderation** | Anti-link protection, admin verification tools, and strict dynamic command gating. |
 | **⚡ Media & Utilities** | Advanced file handlers, HD image/video routers, and interactive command triggers. |
-
+| **⚡ Panel service** | WhatsApp bot
+| **⚡ panel 10gb 10gb 30gb storage** | alive 24/7
 ---
 
 ## 🚀 Quick Deployment & Installation
@@ -43,7 +44,7 @@ Deploy on a local VPS or server:
 5. Enter your phone number when asked
 6. Scan the code with WhatsApp
 
-#### Hosting Platforms (KataBump, Railway, Render, Koyeb)
+#### Hosting Platforms (KataBump, Railway, Render, Koyeb ,vps)
 Deploy on any Node.js hosting platform:
 1. Connect your GitHub repository
 2. Set environment variables if needed
@@ -143,10 +144,10 @@ const randomImagePool = [
 Set `ALIVE_IMG` in your `config.js`:
 ```javascript
 module.exports = {
-  BOT_NAME: "Tsala_Yame",
-  OWNER_NUMBER: "26775462914",
+  BOT_NAME: "Queen-Anika",
+  OWNER_NUMBER: "26773968411",
   MODE: "public",
-  ALIVE_IMG: "https://your-custom-image.com/image.jpg",
+  ALIVE_IMG: "",
   // ... other config
 }
 ```
@@ -156,9 +157,9 @@ Modify the `randomImagePool` array directly in `index.js`:
 ```javascript
 const randomImagePool = [
   config.ALIVE_IMG,
-  'https://your-first-image.com/image1.jpg',
+  'https://your-fiirst-image.com/image1.jpg',
   'https://your-second-image.com/image2.jpg',
-  'https://your-third-image.com/image3.jpg',
+  'https://your-thiriid-image.com/image3.jpg',
   'https://picsum.photos/800/800'
 ].filter(Boolean);
 ```
@@ -202,13 +203,13 @@ const randomImagePool = [
 **config.js:**
 ```javascript
 module.exports = {
-  BOT_NAME: "Tsala_Yame",
-  OWNER_NAME: "MULAX PRIME",
-  OWNER_NUMBER: "26775462914",
+  BOT_NAME: "Queen-Anika",
+  OWNER_NAME: "Njabulo Jb",
+  OWNER_NUMBER: "26773968411",
   PREFIX: ".",
   MODE: "public",
   AUTO_READ_STATUS: "true",
-  ALIVE_IMG: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800",
+  ALIVE_IMG: "https://images.unsplash.com/photo-161800597182384-a83a8bd57fbe?w=800",
   SESSION_ID: ""
 }
 ```
@@ -217,8 +218,8 @@ module.exports = {
 ```javascript
 const randomImagePool = [
   config.ALIVE_IMG,
-  'https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=800',
-  'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=800',
+  'https://images.unsplash.com/photo-1558770745165-9bc0b252726f?w=800',
+  'https://images.unsplash.com/photo-1526387774965328-7f61d4dc18c5?w=800',
   'https://picsum.photos/800/800'
 ].filter(Boolean);
 ```
@@ -253,5 +254,5 @@ const randomImagePool = [
 ---
 
 <p align="center">
-  <b>Designed with 💻 by <a href="https://github.com/MulaxPrime">Mulax Prime</a></b>
+  <b>Designed with 💻 by <a href="https://github.com/NjabuloJf">Njabulo Jb</a></b>
 </p>
