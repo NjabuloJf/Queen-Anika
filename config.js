@@ -12,6 +12,7 @@ module.exports = {
     OWNER_NUMBER: process.env.OWNER_NUMBER || "26773968411",
     PRO_USERS: process.env.PRO_USERS || "26777821911",
     AUDD_API_TOKEN: process.env.AUDD_API_TOKEN || "b132bfc095eb6baf79e759c7f0f981b3",
+    GEMINI_API_KEY: process.env.GEMINI_API_KEY || "AQ.Ab8RN6JtB3DHoh9WONxO3-Q749Se7mz9pYZDj-wZQ8iDQFE_rQ",
     MODE: process.env.MODE || "public",
     PREFIX: process.env.PREFIX || ".",
     BOT_NAME: process.env.BOT_NAME || "Queen-Anika",
