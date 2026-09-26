@@ -6,6 +6,30 @@ const { downloadMediaMessage, getContentType } = require('@whiskeysockets/bailey
 const fs = require('fs');
 const path = require('path');
 
+
+// ========== BRANDING IMAGE ==========
+const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
+
+// ========== CONTEXT INFO ==========
+function ctxInfo() {
+    return {
+        forwardingScore: 999,
+        isForwarded: true,
+        forwardedNewsletterMessageInfo: {
+            newsletterJid: '120363402336733732@newsletter',
+            newsletterName: 'Queen-Anika'
+        },
+        externalAdReply: {
+            title: "Queen-Anika",
+            body: "Ｑｕｅｅｎ-Ａｎｉｋａ ｂｏｔ",
+            thumbnailUrl: "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png",
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false
+        }
+    };
+}
+
 // ==================== VIEW ONCE RECOVERY ====================
 cmd({
     pattern: "vv",
@@ -51,13 +75,15 @@ cmd({
         if (type === "imageMessage") {
             await conn.sendMessage(from, {
                 image: buffer,
-                caption: caption
+                caption: caption,
+                contextInfo: ctxInfo()
             }, { quoted: mek });
         }
         else if (type === "videoMessage") {
             await conn.sendMessage(from, {
                 video: buffer,
-                caption: caption
+                caption: caption,
+                contextInfo: ctxInfo()
             }, { quoted: mek });
         }
         else if (type === "audioMessage") {
