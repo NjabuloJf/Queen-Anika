@@ -254,42 +254,72 @@ async (conn, mek, m, { from, reply, pushname }) => {
         // 🔧 CHANGE THIS to your actual repository URL
         const repoUrl = config.REPO_URL || "https://github.com/NjabuloJf/Queen-Anika";
 
-        const text =`╭─「 *QUEEN-ANIKA* 」
-」
-」〔👤 *User:* ${pushname || 'User'}
-」〔⏱️ *Uptime:* ${getFormattedUptime()}
-」〔🔧 *Prefix:* ${config.PREFIX || '.'}
+        const text =`╭─「*ʠʉɛɛɲ-ɑɲɨƙɑ*」
+」 ╭────「
+」〔👤*ʉʂɛɾ:* ${pushname || 'User'} 
+」〔⏱️*ʉƥƭɨɱɛ:* ${getFormattedUptime()} 
+」〔🔧*ƥɾɛƒɨꭖ:* ${config.PREFIX || '.'} 
 ╰─────」
-╭─「 *GROUP* 」
-│〕 .antilink
-│〕 .antilinkdelete
-│〕 .antilinkoff
-│〕 .antilinkremove
-│〕 .antilinkwarn
-│〕 .goodbye
-│〕 .resetwarns
-│〕 .welcome
+╭─「*ɠɾɔʉƥ*」
+│╭────「
+│〕.ɑɲƭɨʟɨɲƙ
+│〕.ɑɲƭɨʟɨɲƙɗɛʟɛƭɛ
+│〕.ɑɲƭɨʟɨɲƙɔƒƒ
+│〕.ɑɲƭɨʟɨɲƙɾɛɱɔʋɛ
+│〕.ɑɲƭɨʟɨɲƙɯɑɾɲ
+│〕.ɗɛɱɔƭɛ
+│〕.ɠɔɔɗƅɣɛ
+│〕.ɠʂƭɑƭʉʂ
+│〕.ʟɔɕƙ
+│〕.ƥɾɔɱɔƭɛ
+│〕.ɾɛɱɔʋɛ
+│〕.ɾɛʂɛƭɯɑɾɲʂ
+│〕.ʉɲʟɔɕƙ
+│〕.ɯɛʟɕɔɱɛ
+│╰─────」
 ╰─────」
-╭─「 *TOOLS* 」
-│〕 .getpp
-│〕 .alive
-│〕 .menu
-│〕 .ping
-│〕 .repo
-│〕 .shazam
-│〕 .uptime
+╭─「*ɔɯɲɛɾ*」
+│╭────「
+│〕.ƅʟɔɕƙ
+│〕.ɗɛʟ
+│〕.ʂɑʋɛ
+│〕.ʉɲƅʟɔɕƙ
+│╰─────」
 ╰─────」
-╭─「 *DOWNLOAD* 」
-│〕.apk
-│〕.facebook
-│〕.img
-│〕.instagram
-│〕.play
-│〕.playstore
-│〕.tiktok
-│〕.lyrics
-│〕.video
-│〕.youtube
+╭─「*ƭɔɔʟʂ*」
+│╭────「
+│〕.ɑʟɨʋɛ
+│〕.ɱɛɲ
+│〕.ɱɛɲʉ
+│〕.ƥɨɲɠ
+│〕.ɾɛƥ
+│〕.ʂɦɑʐɑɱ
+│〕.ʉƥƭɨɱɛ
+│〕.ɠɛƭƥƥ
+│〕.ʉƥɗɑƭɛ
+│〕.ʋʋ
+│╰─────」
+╰─────」
+╭─「*ɑɨ*」
+│╭────「
+│〕.ɑɨɦɛʟƥ
+│〕.ɠƥƭ
+│〕.ɱɛƭɑ
+│╰─────」
+╰─────」
+╭─「*ɗɔɯɲʟɔɑɗ*」
+│╭────「
+│〕.ɑƥƙ
+│〕.ƒɑɕɛƅɔɔƙ
+│〕.ɨɱɠ
+│〕.ɨɲʂƭɑɠɾɑɱ
+│〕.ƥʟɑɣ
+│〕.ƥʟɑɣʂƭɔɾɛ
+│〕.ƭɨƙƭɔƙ
+│〕.ʋɨɗɛɔ
+│〕.ɣɔʉƭʉƅɛ
+│〕.ʟɣɾɨɕʂ
+│╰─────」
 ╰─────────〔🌸〕`;
 
         await conn.sendMessage(from, {
