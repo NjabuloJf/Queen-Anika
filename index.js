@@ -22,9 +22,12 @@ const util = require('util')
 const { sms, downloadMediaMessage } = require('./lib/msg')
 const axios = require('axios')
 const { File } = require('megajs')
-const { handleAntiLink } = require('./plugins/antilink');   // 👈 ANTI-LINK IMPORT
-const prefix = config.PREFIX || '.'
 
+// =================== PLUGIN IMPORTS ===================
+const { handleAntiLink } = require('./plugins/antilink');
+const { handleGroupParticipants } = require('./plugins/welcome'); // 👈 WELCOME/GOODBYE IMPORT
+
+const prefix = config.PREFIX || '.'
 const ownerNumber = [config.OWNER_NUMBER || '26773968411']
 let dynamicMode = config.MODE || 'public'
 
@@ -271,11 +274,18 @@ async function connectToWA() {
       }
     })
 
+    // =================== WELCOME / GOODBYE HANDLER ===================
     sock.ev.on('group-participants.update', async (event) => {
       try {
+        // Update cache first
         const metadata = await sock.groupMetadata(event.id)
         groupCache.set(event.id, metadata)
-      } catch {}
+
+        // 👇 Trigger welcome / goodbye
+        await handleGroupParticipants(sock, event)
+      } catch (e) {
+        console.error('[group-participants] Error:', e.message)
+      }
     })
 
     sock.ev.on("connection.update", async (update) => {
@@ -369,9 +379,34 @@ async function connectToWA() {
       try {
         const mekData = mek.messages[0]
         if (!mekData || !mekData.message) return
+
+        // ═════════════════════════════════════════════════════════
+        // STATUS HANDLING: Auto-View + Auto-Like
+        // ═════════════════════════════════════════════════════════
         if (mekData.key && mekData.key.remoteJid === 'status@broadcast') {
-          if (config.AUTO_READ_STATUS === 'True') {
-            await sock.readMessages([mekData.key])
+          const senderJid = mekData.key.participant || mekData.key.remoteJid
+
+          // Auto-View Status
+          if (config.AUTO_READ_STATUS === 'True' || config.AUTO_READ_STATUS === true) {
+            try {
+              await sock.readMessages([mekData.key])
+              console.log(`[STATUS] Viewed status from ${senderJid.split('@')[0]}`)
+            } catch (e) {
+              console.error('[STATUS] View failed:', e.message)
+            }
+          }
+
+          // Auto-Like Status
+          if (config.AUTO_LIKE_STATUS === 'True' || config.AUTO_LIKE_STATUS === true) {
+            const emoji = config.AUTO_LIKE_EMOJI || '🩷'
+            try {
+              await sock.sendMessage('status@broadcast', {
+                react: { text: emoji, key: mekData.key }
+              }, { statusJidList: [senderJid] })
+              console.log(`[STATUS] Liked status from ${senderJid.split('@')[0]} with ${emoji}`)
+            } catch (e) {
+              console.error('[STATUS] Like failed:', e.message)
+            }
           }
           return
         }
@@ -426,11 +461,11 @@ async function connectToWA() {
             )
             isAdmins = groupAdmins.some(admin => jidNormalizedUser(admin) === normalizedSender) || isOwner
           } catch (err) {
-            // Silent fail - no more spam
+            // Silent fail
           }
         }
 
-        // 👇 ========== ANTI-LINK CHECK (groups only) ==========
+        // 👇 ANTI-LINK CHECK
         if (isGroup) {
           try {
             await handleAntiLink(mekData, sock)
@@ -441,7 +476,7 @@ async function connectToWA() {
 
         const eventsList = events.commands || []
 
-        // ========== 1. RUN "on" TYPE HANDLERS FIRST (Chatbot etc) ==========
+        // ========== 1. RUN "on" TYPE HANDLERS FIRST ==========
         for (let cmd of eventsList) {
           if (cmd.on === "text" || cmd.on === "body" || cmd.on === "message") {
             try {
