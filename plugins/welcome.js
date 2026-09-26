@@ -8,7 +8,7 @@ const { cmd } = require('../command');
 const config = require("../config");
 
 // ========== BRANDING IMAGE ==========
-const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
+const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/njabuloimg3.png";
 
 // ========== SETTINGS STORE ==========
 const groupSettings = new Map();
