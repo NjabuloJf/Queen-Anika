@@ -14,7 +14,7 @@ const axios = require("axios");
 const GEMINI_API_KEY = config.GEMINI_API_KEY || "AQ.Ab8RN6LZnH1ERKPmzvY9jjPtHdULEniFFC3C2Hdmz9y4Fsg86Q";
 
 // ========== BRANDING IMAGE ==========
-const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
+const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/njabuloimg3.png";
 
 // ========== CONTEXT INFO ==========
 function ctxInfo() {
