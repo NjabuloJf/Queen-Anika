@@ -15,7 +15,7 @@ const { downloadContentFromMessage } = require("@whiskeysockets/baileys");
 const AUDD_TOKEN = config.AUDD_API_TOKEN || "";
 
 // ========== BRANDING IMAGE ==========
-const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
+const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/njabuloimg3.png";
 
 // ========== SONG CACHE ==========
 // key = chatId, value = { title, artist, albumArt, timestamp }
@@ -28,7 +28,7 @@ function ctxInfo() {
         forwardingScore: 999,
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
-            newsletterJid: '1203634129500689311@newsletter',
+            newsletterJid: '120363402336733732@newsletter',
             newsletterName: 'Queen-Anika'
         }
     };
