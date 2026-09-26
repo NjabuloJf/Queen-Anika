@@ -44,7 +44,7 @@ Fork this repository to your GitHub account and give it a star ⭐ to support fu
 <a><img src='https://i.imgur.com/LyHic3i.gif'/></a>
 <a><img src='https://i.imgur.com/LyHic3i.gif'/></a>
  <h1 align="center"> Find bot hosting </h1>
-  <a href="njabulo-ai.vercel.app/Queen-Anika"><img src="https://img.shields.io/badge/bot%20session%20link-white" alt="GET START" width="300"></a>
+  <a href="https://njabulo-ai.vercel.app/"><img src="https://img.shields.io/badge/bot%20website%20link-white" alt="GET START" width="300"></a>
   
 ### 2. Configure Environment Variables
 Set up your configuration variables in your hosting provider panel:
