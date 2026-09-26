@@ -218,7 +218,7 @@ async (conn, mek, m, { from, reply, pushname }) => {
 // 📦 REPO COMMAND
 // ═════════════════════════════════════════════════════════════
 cmd({
-    pattern: "rep",
+    pattern: "repo",
     alias: ["repository", "github", "source"],
     desc: "Get the bot's GitHub repository link.",
     category: "tools",
@@ -233,7 +233,7 @@ async (conn, mek, m, { from, reply, pushname }) => {
         const text =`╭─「 *QUEEN-ANIKA* 」
 │〕.
 │〕.🔗 *Link:*
-│〕. Telegram bot
+│〕. Bot panel hosting free 10gb
 │〕. ${repoUrl}
 │〕. Website njabulo-ai.vercel.app
 │〕.⭐ *Don't forget to star the repo if you like it!*
