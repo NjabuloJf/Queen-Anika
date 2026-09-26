@@ -42,11 +42,13 @@ async (conn, mek, m, { from, sender, reply, args }) => {
         const query = args.join(' ').trim();
         if (!query) {
             return reply(
-`⚠️ *Please provide a song name or YouTube link!*
-
-📌 Example:
-.play shape of you
-.play https://youtu.be/xxxxx`
+`╭─「 *QUEEN-ANIKA* 」
+│〕.⚠️ *Please provide a song name or YouTube link!*
+│〕.
+│〕.📌 Example:
+│〕..play shape of you
+│〕..play https://youtu.be/xxxxx
+╰─────────〔🌸〕`
             );
         }
 
@@ -71,27 +73,28 @@ async (conn, mek, m, { from, sender, reply, args }) => {
             return reply("❌ Failed to retrieve the audio download link.");
         }
 
-        const caption =
-`🎧 *Title:* ${video.title}
-🎼 *Views:* ${video.views.toLocaleString()}
-🎻 *Uploaded:* ${video.ago}
-⏱️ *Duration:* ${video.timestamp}
-👤 *Author:* ${video.author?.name || 'Unknown'}
-
-⇆ㅤ ||◁ㅤ❚❚ㅤ▷||ㅤ ↻`;
+        const caption =`╭─「 *QUEEN-ANIKA* 」
+│〕.🎧 *Title:* ${video.title}
+│〕.🎼 *Views:* ${video.views.toLocaleString()}
+│〕.🎻 *Uploaded:* ${video.ago}
+│〕.⏱️ *Duration:* ${video.timestamp}
+│〕.👤 *Author:* ${video.author?.name || 'Unknown'}
+│〕.
+│〕.⇆ㅤ ||◁ㅤ❚❚ㅤ▷||ㅤ ↻
+╰─────────〔🌸〕`;
 
         // Send thumbnail preview
         try {
             await conn.sendMessage(from, {
                 image: { url: video.thumbnail },
                 caption: caption,
-                contextInfo: ctxInfo()
+                
             }, { quoted: mek });
         } catch (e) {
             console.log('[PLAY] Thumbnail failed, sending text only');
             await conn.sendMessage(from, {
                 text: caption,
-                contextInfo: ctxInfo()
+                
             }, { quoted: mek });
         }
 
@@ -101,7 +104,7 @@ async (conn, mek, m, { from, sender, reply, args }) => {
             mimetype: 'audio/mpeg',
             fileName: fileName,
             ptt: false,
-            contextInfo: ctxInfo()
+            
         }, { quoted: mek });
 
     } catch (error) {
@@ -126,11 +129,13 @@ async (conn, mek, m, { from, sender, reply, args }) => {
         const query = args.join(' ').trim();
         if (!query) {
             return reply(
-`⚠️ *Please provide a video name or YouTube link!*
-
-📌 Example:
-.video shape of you
-.video https://youtu.be/xxxxx`
+`╭─「 *QUEEN-ANIKA* 」
+│〕.⚠️ *Please provide a video name or YouTube link!*
+│〕.
+│〕.📌 Example:
+│〕..video shape of you
+│〕..video https://youtu.be/xxxxx
+╰─────────〔🌸〕`
             );
         }
 
@@ -155,27 +160,28 @@ async (conn, mek, m, { from, sender, reply, args }) => {
             return reply("❌ Failed to retrieve the video download link.");
         }
 
-        const caption =
-`🎬 *Title:* ${video.title}
-🎼 *Views:* ${video.views.toLocaleString()}
-🎻 *Uploaded:* ${video.ago}
-⏱️ *Duration:* ${video.timestamp}
-👤 *Author:* ${video.author?.name || 'Unknown'}
-
-⇆ㅤ ||◁ㅤ❚❚ㅤ▷||ㅤ ↻`;
+        const caption =`╭─「 *QUEEN-ANIKA* 」
+│〕.🎬 *Title:* ${video.title}
+│〕.🎼 *Views:* ${video.views.toLocaleString()}
+│〕.🎻 *Uploaded:* ${video.ago}
+│〕.⏱️ *Duration:* ${video.timestamp}
+│〕.👤 *Author:* ${video.author?.name || 'Unknown'}
+│〕.
+│〕.⇆ㅤ ||◁ㅤ❚❚ㅤ▷||ㅤ ↻
+╰─────────〔🌸〕`;
 
         // Send thumbnail preview
         try {
             await conn.sendMessage(from, {
                 image: { url: video.thumbnail },
                 caption: caption,
-                contextInfo: ctxInfo()
+                
             }, { quoted: mek });
         } catch (e) {
             console.log('[VIDEO] Thumbnail failed, sending text only');
             await conn.sendMessage(from, {
                 text: caption,
-                contextInfo: ctxInfo()
+                
             }, { quoted: mek });
         }
 
@@ -187,7 +193,7 @@ async (conn, mek, m, { from, sender, reply, args }) => {
                 mimetype: 'video/mp4',
                 fileName: fileName,
                 caption: `🎬 ${video.title}`,
-                contextInfo: ctxInfo()
+                
             }, { quoted: mek });
             console.log('[VIDEO] Sent as native video successfully.');
         } catch (videoError) {
@@ -198,7 +204,7 @@ async (conn, mek, m, { from, sender, reply, args }) => {
                 mimetype: 'video/mp4',
                 fileName: fileName,
                 caption: `🎬 *${video.title}*\n(Document Format)`,
-                contextInfo: ctxInfo()
+                
             }, { quoted: mek });
             console.log('[VIDEO] Sent as document successfully.');
         }
