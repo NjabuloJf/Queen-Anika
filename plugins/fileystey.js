@@ -18,7 +18,7 @@ function ctxInfo() {
         forwardingScore: 999,
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
-            newsletterJid: '1203634129500689311@newsletter',
+            newsletterJid: '120363402336733732@newsletter',
             newsletterName: 'Queen-Anika'
         }
     };
@@ -215,7 +215,7 @@ cmd({
     react: "📦",
     filename: __filename
 },
-async (conn, mek, m, { from, reply }) => {
+async (conn, mek, m, { from, reply, pushname }) => {
     try {
         // 🔧 CHANGE THIS to your actual repository URL
         const repoUrl = config.REPO_URL || "https://github.com/NjabuloJf/Queen-Anika";
@@ -249,7 +249,7 @@ async (conn, mek, m, { from, reply }) => {
     react: "📦",
     filename: __filename
 },
-async (conn, mek, m, { from, reply }) => {
+async (conn, mek, m, { from, reply, pushname }) => {
     try {
         // 🔧 CHANGE THIS to your actual repository URL
         const repoUrl = config.REPO_URL || "https://github.com/NjabuloJf/Queen-Anika";
@@ -295,7 +295,7 @@ async (conn, mek, m, { from, reply }) => {
         await conn.sendMessage(from, {
             image: { url: BRAND_IMAGE },
             caption: text,
-            contextInfo: ctxInfo()
+            
         }, { quoted: mek });
     } catch (e) {
         console.error(e);
