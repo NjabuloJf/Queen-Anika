@@ -9,7 +9,7 @@ const { cmd } = require('../command');
 const config = require("../config");
 
 // ========== BRANDING IMAGE ==========
-const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
+const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/njabuloimg3.png";
 
 // ========== STORE ==========
 const groupAntiLinkSettings = new Map();
@@ -150,10 +150,12 @@ async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner }) => {
         }
 
         await sendBranded(conn, from, mek,
-`🗑️ *ANTI-LINK DELETE*
-
-✅ Anti-link DELETE mode enabled.
-Links will be deleted automatically.`);
+`╭─「 *QUEEN-ANIKA* 」
+│〕.🗑️ *ANTI-LINK DELETE*
+│〕.
+│〕.✅ Anti-link DELETE mode enabled.
+│〕.Links will be deleted automatically.
+╰─────────〔🌸〕`);
     } catch (e) {
         console.error(e);
         reply(`❌ Error: ${e.message}`);
@@ -186,10 +188,14 @@ async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner }) => {
         }
 
         await sendBranded(conn, from, mek,
-`👢 *ANTI-LINK REMOVE*
+`╭─「 *QUEEN-ANIKA* 」
+│〕.👢 *ANTI-LINK REMOVE*
+│〕.
+│〕.✅ Anti-link REMOVE mode enabled.
+│〕.Links will be deleted and sender will be removed from group immediately.
+╰─────────〔🌸〕`);
 
-✅ Anti-link REMOVE mode enabled.
-Links will be deleted and sender will be removed from group immediately.`);
+ 
     } catch (e) {
         console.error(e);
         reply(`❌ Error: ${e.message}`);
@@ -221,9 +227,11 @@ async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner }) => {
         }
 
         await sendBranded(conn, from, mek,
-`🔓 *ANTI-LINK OFF*
-
-✅ Anti-link has been disabled.`);
+`╭─「 *QUEEN-ANIKA* 」
+│〕.🔓 *ANTI-LINK OFF*
+│〕.
+│〕.✅ Anti-link has been disabled.
+╰─────────〔🌸〕`);
     } catch (e) {
         console.error(e);
         reply(`❌ Error: ${e.message}`);
@@ -263,17 +271,19 @@ async (conn, mek, m, { from, sender, reply, isGroup }) => {
         }
 
         const infoText =
-`🔗 *ANTI-LINK STATUS*
-
-📊 *Current Status:* ${statusDisplay}
-
-📌 *Commands:*
-│ .antilinkwarn — Warn mode (3 warnings then remove)
-│ .antilinkdelete — Delete mode
-│ .antilinkremove — Remove mode (instant kick)
-│ .antilinkoff — Disable anti-link
-│ .resetwarns — Clear all warnings
-${hasWarns ? `\n📊 *Warning Count:*${userWarns}` : ''}`;
+`╭─「 *QUEEN-ANIKA* 」
+│〕.🔗 *ANTI-LINK STATUS*
+│〕.
+│〕.📊 *Current Status:* ${statusDisplay}
+│〕.
+│〕.📌 *Commands:*
+│〕. .antilinkwarn — Warn mode (3 warnings then remove)
+│〕. .antilinkdelete — Delete mode
+│〕. .antilinkremove — Remove mode (instant kick)
+│〕. .antilinkoff — Disable anti-link
+│〕. .resetwarns — Clear all warnings
+${hasWarns ? `\n📊 *Warning Count:*${userWarns}` : ''}
+╰─────────〔🌸〕`;
 
         await sendBranded(conn, from, mek, infoText);
     } catch (e) {
