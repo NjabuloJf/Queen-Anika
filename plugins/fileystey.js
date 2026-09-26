@@ -13,6 +13,8 @@ const os = require('os');
 const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/njabuloimg3.png";
 
 // ========== CONTEXT INFO ==========
+
+
 function ctxInfo() {
     return {
         forwardingScore: 999,
@@ -20,6 +22,14 @@ function ctxInfo() {
         forwardedNewsletterMessageInfo: {
             newsletterJid: '120363402336733732@newsletter',
             newsletterName: 'Queen-Anika'
+        },
+        externalAdReply: {
+            title: "Queen-Anika",
+            body: "Powered by Njabulo Jb",
+            thumbnailUrl: "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png",
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false
         }
     };
 }
