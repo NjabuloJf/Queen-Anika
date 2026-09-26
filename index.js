@@ -274,10 +274,6 @@ async function connectToWA() {
       }
     })
 
-    // ========== BRANDING IMAGE ==========
-const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
-
-
 
     // =================== WELCOME / GOODBYE HANDLER ===================
     sock.ev.on('group-participants.update', async (event) => {
@@ -305,23 +301,9 @@ const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/ma
         try {
           const ownerJid = ownerNumber[0] + "@s.whatsapp.net"
           await sock.sendMessage(ownerJid, {
-            image: { url: BRAND_IMAGE },
+            image: { url: 'https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png'},
            caption: "🤖 *Queen-Anika is now Connected & Online!* 🩷\n\n_System fully operational use menu or ping on group._",
-        forwardingScore: 999,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363402336733732@newsletter',
-            newsletterName: 'Queen-Anika'
-        },
-        externalAdReply: {
-            title: "Queen-Anika",
-            body: "Ｑｕｅｅｎ-Ａｎｉｋａ ｂｏｔ",
-            thumbnailUrl: "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png",
-            mediaType: 1,
-            renderLargerThumbnail: false,
-            showAdAttribution: false
-        }
-         
+       
           })
         } catch (e) {
           console.error("Failed to send connection alert to owner:", e.message)
