@@ -11,7 +11,7 @@ const config = require("../config");
 const axios = require("axios");
 
 // ========== API KEY (loaded safely) ==========
-const GEMINI_API_KEY = config.GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
+const GEMINI_API_KEY = config.GEMINI_API_KEY
 
 // ========== BRANDING IMAGE ==========
 const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
