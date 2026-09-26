@@ -2,19 +2,19 @@
  * ai.js
  * AI commands: .gpt and .meta
  * Uses Google Gemini API.
- * No fancy font. Queen-Anika branding.
+ * API key loaded from config.js or environment — NOT hardcoded.
+ * Queen-Anika branding.
  */
 
 const { cmd } = require('../command');
 const config = require("../config");
 const axios = require("axios");
 
-// ========== API KEY ==========
-// Priority: config.GEMINI_API_KEY > hardcoded fallback
-const GEMINI_API_KEY = config.GEMINI_API_KEY || "AQ.Ab8RN6LZnH1ERKPmzvY9jjPtHdULEniFFC3C2Hdmz9y4Fsg86Q";
+// ========== API KEY (loaded safely) ==========
+const GEMINI_API_KEY = config.GEMINI_API_KEY || process.env.GEMINI_API_KEY || "";
 
 // ========== BRANDING IMAGE ==========
-const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/njabuloimg3.png";
+const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
 
 // ========== CONTEXT INFO ==========
 function ctxInfo() {
@@ -22,13 +22,20 @@ function ctxInfo() {
         forwardingScore: 999,
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
-            newsletterJid: '1203634129500689311@newsletter',
+            newsletterJid: '120363402336733732@newsletter',
             newsletterName: 'Queen-Anika'
+        },
+        externalAdReply: {
+            title: "Queen-Anika",
+            body: "Powered by Njabulo Jb",
+            thumbnailUrl: BRAND_IMAGE,
+            mediaType: 1,
+            renderLargerThumbnail: false,
+            showAdAttribution: false
         }
     };
 }
 
-// ========== HELPER: Send branded ==========
 async function sendBranded(conn, dest, ms, text) {
     await conn.sendMessage(dest, {
         image: { url: BRAND_IMAGE },
@@ -48,11 +55,11 @@ const GEMINI_MODELS = [
 // ========== CALL GEMINI ==========
 async function callGemini(prompt, modelIndex = 0) {
     if (!GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY is missing");
+        throw new Error("GEMINI_API_KEY is missing in config.js. Get one free at https://aistudio.google.com/apikey");
     }
 
     const model = GEMINI_MODELS[modelIndex];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
 
     console.log(`[AI] Trying ${model}...`);
 
@@ -79,7 +86,10 @@ async function callGemini(prompt, modelIndex = 0) {
                 ]
             },
             {
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-goog-api-key": GEMINI_API_KEY
+                },
                 timeout: 60000
             }
         );
@@ -90,12 +100,11 @@ async function callGemini(prompt, modelIndex = 0) {
             return text.trim();
         }
 
-        // Log why no text (blocked by safety, etc.)
         const finishReason = data?.candidates?.[0]?.finishReason;
         const blockReason = data?.promptFeedback?.blockReason;
         console.log(`[AI] No text. finishReason=${finishReason}, blockReason=${blockReason}`);
-
         throw new Error(`No response (${finishReason || blockReason || 'unknown'})`);
+
     } catch (e) {
         const status = e?.response?.status;
         const errMsg = e?.response?.data?.error?.message || e.message;
@@ -106,19 +115,10 @@ async function callGemini(prompt, modelIndex = 0) {
             return callGemini(prompt, modelIndex + 1);
         }
 
-        // All models failed
-        if (status === 400) {
-            throw new Error("Invalid API key or request format.");
-        }
-        if (status === 403) {
-            throw new Error("API key rejected. Check that the Generative Language API is enabled for your key.");
-        }
-        if (status === 429) {
-            throw new Error("Rate limit reached. Please wait a minute and try again.");
-        }
-        if (status === 503) {
-            throw new Error("Gemini is temporarily overloaded. Please try again in a moment.");
-        }
+        if (status === 400) throw new Error("Invalid API key or request format.");
+        if (status === 401 || status === 403) throw new Error("API key rejected. Get a valid key from https://aistudio.google.com/apikey");
+        if (status === 429) throw new Error("Rate limit reached. Wait a minute and try again.");
+        if (status === 503) throw new Error("Gemini is overloaded. Try again in a moment.");
         throw new Error(`AI error: ${errMsg}`);
     }
 }
@@ -140,7 +140,6 @@ async function handleAI(conn, mek, from, reply, args, label) {
     try {
         const answer = await callGemini(input);
         await sendBranded(conn, from, mek, `🤖 *${label}*\n\n${answer}`);
-
         try { await conn.sendMessage(from, { react: { text: "✅", key: mek.key } }); } catch {}
     } catch (e) {
         console.error(`[${label}] Error:`, e.message);
@@ -194,14 +193,13 @@ async (conn, mek, m, { from, reply }) => {
     const menu =
 `🤖 *AI COMMANDS*
 
-*Models:*
-• .gpt <question> — Ask GPT
+• .gpt <question> — Ask AI
 • .meta <question> — Ask Meta AI
 
 *Examples:*
 • .gpt what is coding
 • .meta tell me a joke
-• .ai hello (uses GPT)
+• .ai hello
 
 _Powered by Queen-Anika 🩷_`;
 
