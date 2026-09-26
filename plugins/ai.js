@@ -1,7 +1,7 @@
 /**
- * combined.js
- * Includes: gstatus, AI (GPT + Meta AI only), viewonce
- * Uses cmd() handler. No fancy font. No buttons. Queen-Anika branding.
+ * ai.js — AI (GPT + Meta AI) + gstatus + vv
+ * No API key needed — uses free Pollinations endpoint.
+ * Debug logs included so we can see what's happening.
  */
 
 const { cmd } = require('../command');
@@ -13,35 +13,156 @@ const {
 } = require("@whiskeysockets/baileys");
 const { Sticker, StickerTypes } = require("wa-sticker-formatter");
 
-// ═════════════════════════════════════════════════════════════
-// BRANDING & HELPERS
-// ═════════════════════════════════════════════════════════════
-const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/njabuloimg3.png";
+// ========== BRANDING IMAGE ==========
+const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
 
 function ctxInfo() {
     return {
         forwardingScore: 999,
         isForwarded: true,
         forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363402336733732@newsletter',
+            newsletterJid: '1203634129500689311@newsletter',
             newsletterName: 'Queen-Anika'
         }
     };
 }
 
-async function sendBranded(conn, dest, ms, text) {
+async function sendBranded(conn, dest, ms, text, mentions = []) {
     await conn.sendMessage(dest, {
         image: { url: BRAND_IMAGE },
         caption: text,
+        mentions,
         contextInfo: ctxInfo()
     }, { quoted: ms });
 }
 
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+// ═════════════════════════════════════════════════════════════
+//   🤖 AI — GPT + Meta AI (FREE, no API key needed)
+// ═════════════════════════════════════════════════════════════
 
+// Pollinations free endpoints (no key required)
+const POLLINATIONS_TEXT_URL = "https://text.pollinations.ai";
+
+async function callAI(prompt, model = "openai") {
+    console.log(`[AI] Calling ${model} with prompt: "${prompt.substring(0, 60)}..."`);
+
+    // Method 1: POST to OpenAI-compatible endpoint (no key needed for free tier)
+    try {
+        const { data } = await axios.post(
+            "https://text.pollinations.ai/openai",
+            {
+                model: model,
+                messages: [
+                    { role: "system", content: "You are a helpful WhatsApp assistant. Keep answers short and friendly." },
+                    { role: "user", content: prompt }
+                ]
+            },
+            {
+                headers: { "Content-Type": "application/json" },
+                timeout: 45000
+            }
+        );
+
+        const text = data?.choices?.[0]?.message?.content;
+        if (text) {
+            console.log(`[AI] ✅ Success via POST`);
+            return text.trim();
+        }
+    } catch (e) {
+        console.log(`[AI] POST failed: ${e.message}`);
+    }
+
+    // Method 2: Simple GET fallback
+    try {
+        const url = `${POLLINATIONS_TEXT_URL}/${encodeURIComponent(prompt)}?model=${model}`;
+        const { data } = await axios.get(url, { timeout: 45000 });
+
+        if (typeof data === 'string' && data.trim()) {
+            console.log(`[AI] ✅ Success via GET`);
+            return data.trim();
+        }
+        if (data?.content) return data.content;
+        if (data?.text) return data.text;
+    } catch (e) {
+        console.log(`[AI] GET failed: ${e.message}`);
+    }
+
+    throw new Error("AI is not responding. Please try again in a moment.");
+}
+
+async function handleAI(conn, mek, from, reply, args, model, label) {
+    const input = (args || []).join(" ").trim();
+    console.log(`[${label}] Input: "${input}"`);
+
+    if (!input) {
+        return reply(`❌ Usage: .${label.toLowerCase()} <your question>\n\nExample: .${label.toLowerCase()} what is coding?`);
+    }
+
+    try { await conn.sendMessage(from, { react: { text: "⌛", key: mek.key } }); } catch {}
+
+    try {
+        const answer = await callAI(input, model);
+        await sendBranded(conn, from, mek, `🤖 *${label}*\n\n${answer}`);
+        try { await conn.sendMessage(from, { react: { text: "✅", key: mek.key } }); } catch {}
+    } catch (e) {
+        console.error(`[${label}] Error:`, e.message);
+        reply(`❌ ${e.message}`);
+        try { await conn.sendMessage(from, { react: { text: "❌", key: mek.key } }); } catch {}
+    }
+}
+
+// .gpt — GPT
+cmd({
+    pattern: "gpt",
+    alias: ["ai", "chatgpt", "ask"],
+    desc: "Ask GPT AI anything",
+    category: "AI",
+    react: "🤖",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply, args }) => {
+    await handleAI(conn, mek, from, reply, args, "openai", "GPT");
+});
+
+// .meta — Meta AI (Llama)
+cmd({
+    pattern: "meta",
+    alias: ["metaai", "llama", "llama4"],
+    desc: "Ask Meta AI (Llama) anything",
+    category: "AI",
+    react: "🦙",
+    filename: __filename
+},
+async (conn, mek, from2, ctx) => {
+    await handleAI(conn, mek, ctx.from, ctx.reply, ctx.args, "llama", "META AI");
+});
+
+// .aihelp
+cmd({
+    pattern: "aihelp",
+    alias: ["aimenu", "aicommands"],
+    desc: "AI help menu",
+    category: "AI",
+    react: "📋",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    const menu =
+`🤖 *AI COMMANDS*
+
+• .gpt <question> — Ask GPT
+• .meta <question> — Ask Meta AI (Llama)
+
+*Examples:*
+• .gpt what is JavaScript
+• .meta tell me a joke
+• .ai hello (uses GPT)`;
+
+    await sendBranded(conn, from, mek, menu);
+});
 
 // ═════════════════════════════════════════════════════════════
-// 1. 📸 GROUP STATUS (.gstatus)
+//   📸 GROUP STATUS (.gstatus)
 // ═════════════════════════════════════════════════════════════
 async function getBufferFromMedia(msg, type) {
     const stream = await downloadContentFromMessage(msg, type);
@@ -69,6 +190,8 @@ cmd({
 },
 async (conn, mek, m, { from, reply, args, isGroup, quoted }) => {
     try {
+        console.log(`[GSTATUS] Triggered in ${from}, isGroup=${isGroup}`);
+
         const afterCmd = (args || []).join(" ").trim();
         let targetGroupJid = null;
         let inlineText = null;
@@ -121,6 +244,7 @@ Reply to media and provide a group link or JID.
         let sourceMsg = null;
         let mediaType = null;
 
+        // Check own message
         if (mek.message?.imageMessage) {
             sourceMsg = mek.message.imageMessage;
             mediaType = "image";
@@ -133,22 +257,21 @@ Reply to media and provide a group link or JID.
             sourceMsg = mek.message.audioMessage;
             mediaType = "audio";
         } else if (quoted) {
-            const q = quoted;
-            if (q.imageMessage) {
-                sourceMsg = q.imageMessage;
+            if (quoted.imageMessage) {
+                sourceMsg = quoted.imageMessage;
                 mediaType = "image";
-                caption = q.imageMessage?.caption || inlineText || null;
-            } else if (q.videoMessage) {
-                sourceMsg = q.videoMessage;
+                caption = quoted.imageMessage?.caption || inlineText || null;
+            } else if (quoted.videoMessage) {
+                sourceMsg = quoted.videoMessage;
                 mediaType = "video";
-                caption = q.videoMessage?.caption || inlineText || null;
-            } else if (q.audioMessage) {
-                sourceMsg = q.audioMessage;
+                caption = quoted.videoMessage?.caption || inlineText || null;
+            } else if (quoted.audioMessage) {
+                sourceMsg = quoted.audioMessage;
                 mediaType = "audio";
-            } else if (q.conversation) {
-                caption = q.conversation || inlineText || null;
-            } else if (q.extendedTextMessage?.text) {
-                caption = q.extendedTextMessage.text || inlineText || null;
+            } else if (quoted.conversation) {
+                caption = quoted.conversation || inlineText || null;
+            } else if (quoted.extendedTextMessage?.text) {
+                caption = quoted.extendedTextMessage.text || inlineText || null;
             }
         } else {
             caption = inlineText || null;
@@ -157,6 +280,8 @@ Reply to media and provide a group link or JID.
         if (!mediaType && !caption) {
             return reply("❌ Reply to an image, video, audio, or include text.");
         }
+
+        console.log(`[GSTATUS] Type: ${mediaType || 'text'}, Target: ${targetGroupJid}`);
 
         if (mediaType === "image") {
             const buffer = await getBufferFromMedia(sourceMsg, "image");
@@ -193,95 +318,8 @@ Reply to media and provide a group link or JID.
     }
 });
 
-
 // ═════════════════════════════════════════════════════════════
-// 2. 🤖 AI COMMANDS (GPT + Meta AI only)
-// ═════════════════════════════════════════════════════════════
-const POLLINATIONS_KEY = config.POLLINATIONS_API_KEY || "";
-const POLLINATIONS_URL = "https://gen.pollinations.ai/v1/chat/completions";
-
-// Only 2 models: GPT and Meta AI
-const MODELS = {
-    gpt: "openai-fast",   // GPT (fast)
-    meta: "llama"         // Meta AI (Llama)
-};
-
-async function callAI(prompt, model) {
-    if (!POLLINATIONS_KEY) throw new Error("POLLINATIONS_API_KEY missing in config.js");
-
-    const { data } = await axios.post(
-        POLLINATIONS_URL,
-        {
-            model: model,
-            messages: [
-                { role: "system", content: "You are a helpful WhatsApp AI assistant. Keep answers concise and friendly. Use emojis sparingly." },
-                { role: "user", content: prompt }
-            ]
-        },
-        {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${POLLINATIONS_KEY}`
-            },
-            timeout: 60000
-        }
-    );
-
-    const text = data?.choices?.[0]?.message?.content;
-    if (!text) throw new Error("Empty response from AI");
-    return text.trim();
-}
-
-async function handleAI(conn, mek, from, reply, args, model, label) {
-    const input = (args || []).join(" ").trim();
-    if (!input) {
-        return reply(`❌ Usage: .${label.toLowerCase()} <your input>`);
-    }
-
-    try { await conn.sendMessage(from, { react: { text: "⌛", key: mek.key } }); } catch {}
-
-    try {
-        const answer = await callAI(input, model);
-        await sendBranded(conn, from, mek, `🤖 *${label}*\n\n${answer}`);
-        try { await conn.sendMessage(from, { react: { text: "✅", key: mek.key } }); } catch {}
-    } catch (e) {
-        console.error(`[AI:${label}]`, e.message);
-        reply(`⏳ ${e.message}\n\n_Tip: Wait a minute and try again._`);
-        try { await conn.sendMessage(from, { react: { text: "❌", key: mek.key } }); } catch {}
-    }
-}
-
-// .gpt — GPT
-cmd({
-    pattern: "gpt",
-    alias: ["ai", "chatgpt", "ask"],
-    desc: "Ask GPT AI anything",
-    category: "AI",
-    react: "🤖",
-    filename: __filename
-},
-async (conn, mek, m, { from, reply, args }) => {
-    await handleAI(conn, mek, from, reply, args, MODELS.gpt, "GPT");
-});
-
-// .meta — Meta AI (Llama)
-cmd({
-    pattern: "meta",
-    alias: ["metaai", "llama", "llama4"],
-    desc: "Ask Meta AI (Llama) anything",
-    category: "AI",
-    react: "🦙",
-    filename: __filename
-},
-async (conn, mek, m, { from, reply, args }) => {
-    await handleAI(conn, mek, from, reply, args, MODELS.meta, "META AI");
-});
-
-
-
-
-// ═════════════════════════════════════════════════════════════
-// 3. 👁️ VIEW ONCE SAVER (.vv)
+//   👁️ VIEW ONCE SAVER (.vv)
 // ═════════════════════════════════════════════════════════════
 function unwrapViewOnce(input) {
     if (!input) return null;
@@ -309,7 +347,9 @@ cmd({
     react: "👁️",
     filename: __filename
 },
-async (conn, mek, m, { from, reply, quoted }) {
+async (conn, mek, m, { from, reply, quoted }) => {
+    console.log(`[VV] Triggered. quoted=${quoted ? 'yes' : 'no'}`);
+
     if (!quoted) {
         return reply("👁️ Reply to a view-once message you want to save");
     }
@@ -319,6 +359,8 @@ async (conn, mek, m, { from, reply, quoted }) {
         if (!content) return reply("❌ Cannot unwrap this message.");
 
         const type = getContentType(content);
+        console.log(`[VV] Detected type: ${type}`);
+
         let msg;
 
         if (type === "imageMessage") {

@@ -1,16 +1,14 @@
 /**
  * groups.js
- * Group management commands: lock, unlock, promote, demote, remove (kick)
- * Uses cmd() handler. No fancy font. Queen-Anika branding.
+ * Group management: lock, unlock, promote, demote, remove
+ * BULLETPROOF admin check — handles LID, device suffixes, everything.
  */
 
 const { cmd } = require('../command');
 const config = require("../config");
 
-// ========== BRANDING IMAGE ==========
 const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
 
-// ========== CONTEXT INFO ==========
 function ctxInfo() {
     return {
         forwardingScore: 999,
@@ -22,7 +20,6 @@ function ctxInfo() {
     };
 }
 
-// ========== HELPER: Send branded message ==========
 async function sendBranded(conn, dest, ms, text, mentions = []) {
     await conn.sendMessage(dest, {
         image: { url: BRAND_IMAGE },
@@ -32,59 +29,113 @@ async function sendBranded(conn, dest, ms, text, mentions = []) {
     }, { quoted: ms });
 }
 
-// ========== HELPER: Extract Target User JID ==========
-function getTargetJid(quoted, mek, m) {
-    // 1. Check if replying to a message
-    if (quoted) {
-        return quoted.sender || quoted.participant || quoted.key?.participant;
-    }
-
-    // 2. Check for mentions in the message context
-    const contextInfo = mek.message?.extendedTextMessage?.contextInfo;
-    if (contextInfo?.mentionedJid && contextInfo.mentionedJid.length > 0) {
-        return contextInfo.mentionedJid[0];
-    }
-
-    // 3. Check the direct mentions array passed by the bot
-    if (m.mentionedJid && m.mentionedJid.length > 0) {
-        return m.mentionedJid[0];
-    }
-
+// ========== HELPER: Extract JID safely ==========
+function extractJid(user) {
+    if (!user) return null;
+    if (typeof user === 'string') return user;
+    if (typeof user === 'object') return user.id || user.jid || user.phoneNumber || null;
     return null;
 }
 
-// ========== HELPER: Check if target is the bot ==========
-function isBot(conn, jid) {
-    if (!jid) return false;
-    const botNum = conn.user?.id?.split(':')[0];
-    const targetNum = String(jid).split('@')[0].split(':')[0];
-    return botNum === targetNum;
+// ========== HELPER: Just the number part ==========
+function numOf(jid) {
+    if (!jid) return null;
+    return String(jid).split('@')[0].split(':')[0];
 }
 
-// ========== HELPER: Check if target is the sender ==========
+// ========== BULLETPROOF: Is the bot an admin? ==========
+async function checkBotAdmin(conn, groupJid) {
+    try {
+        const metadata = await conn.groupMetadata(groupJid);
+        if (!metadata || !metadata.participants) return false;
+
+        // Collect ALL possible identifiers for the bot
+        const botIds = new Set();
+        if (conn.user?.id) botIds.add(numOf(conn.user.id));
+        if (conn.user?.lid) botIds.add(numOf(conn.user.lid));
+        // Sometimes the bot's JID is in creds.me
+        if (conn.authState?.creds?.me?.id) botIds.add(numOf(conn.authState.creds.me.id));
+        if (conn.authState?.creds?.me?.lid) botIds.add(numOf(conn.authState.creds.me.lid));
+
+        console.log('[BOT-ADMIN CHECK] Bot identifiers:', [...botIds]);
+
+        for (const p of metadata.participants) {
+            const pIdNum = numOf(p.id);
+            const pLidNum = numOf(p.lid);
+
+            const isBot = botIds.has(pIdNum) || botIds.has(pLidNum);
+            if (!isBot) continue;
+
+            const isAdmin = p.admin === 'admin' || p.admin === 'superadmin';
+            console.log(`[BOT-ADMIN CHECK] Found bot as participant — admin=${p.admin}, isAdmin=${isAdmin}`);
+            return isAdmin;
+        }
+
+        console.log('[BOT-ADMIN CHECK] Bot not found in participants list');
+        return false;
+    } catch (e) {
+        console.error('[BOT-ADMIN CHECK] Error:', e.message);
+        return false;
+    }
+}
+
+// ========== HELPER: Get target user ==========
+function getTargetJid(quoted, mek, m) {
+    if (quoted) {
+        return quoted.sender || quoted.participant || quoted.key?.participant;
+    }
+    const ci = mek.message?.extendedTextMessage?.contextInfo;
+    if (ci?.mentionedJid && ci.mentionedJid.length > 0) return ci.mentionedJid[0];
+    if (m.mentionedJid && m.mentionedJid.length > 0) return m.mentionedJid[0];
+    return null;
+}
+
+function isBotItself(conn, jid) {
+    if (!jid) return false;
+    const targetNum = numOf(jid);
+    const botNum = numOf(conn.user?.id);
+    const botLid = numOf(conn.user?.lid);
+    return targetNum === botNum || targetNum === botLid;
+}
+
 function isSender(sender, jid) {
-    if (!jid || !sender) return false;
-    const senderNum = String(sender).split('@')[0].split(':')[0];
-    const targetNum = String(jid).split('@')[0].split(':')[0];
-    return senderNum === targetNum;
+    return jid && sender && numOf(sender) === numOf(jid);
+}
+
+// ========== HELPER: Bot needs admin message ==========
+function botNeedsAdminMsg(conn) {
+    return `🚫 I need to be an admin to do this.
+
+👉 Make me admin first!
+My number: +${numOf(conn.user?.id) || 'unknown'}
+
+📌 Steps:
+1. Open group info
+2. Tap "Members"
+3. Find me: +${numOf(conn.user?.id) || 'unknown'}
+4. Tap "Make group admin"
+
+⚠️ If I already look like admin, try restarting the bot.`;
 }
 
 // ═════════════════════════════════════════════════════════════
-// 🔒 LOCK COMMAND
+// 🔒 LOCK
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "lock",
     alias: ["lockgroup", "close"],
-    desc: "Lock the group (only admins can send messages)",
+    desc: "Lock group — only admins can send",
     category: "group",
     react: "🔒",
     filename: __filename
 },
-async (conn, mek, m, { from, reply, isGroup, isAdmins, isBotAdmins, isOwner }) => {
+async (conn, mek, m, { from, reply, isGroup, isAdmins, isOwner }) => {
     try {
         if (!isGroup) return reply("🚫 This command is for group use only.");
         if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
-        if (!isBotAdmins) return reply("🚫 I need to be an admin to lock the group.");
+
+        const botIsAdmin = await checkBotAdmin(conn, from);
+        if (!botIsAdmin) return reply(botNeedsAdminMsg(conn));
 
         await conn.groupSettingUpdate(from, 'announcement');
         await sendBranded(conn, from, mek, "🔒 *GROUP LOCKED*\n\n✅ Only admins can send messages now.");
@@ -95,21 +146,23 @@ async (conn, mek, m, { from, reply, isGroup, isAdmins, isBotAdmins, isOwner }) =
 });
 
 // ═════════════════════════════════════════════════════════════
-// 🔓 UNLOCK COMMAND
+// 🔓 UNLOCK
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "unlock",
     alias: ["unlockgroup", "open"],
-    desc: "Unlock the group (everyone can send messages)",
+    desc: "Unlock group — everyone can send",
     category: "group",
     react: "🔓",
     filename: __filename
 },
-async (conn, mek, m, { from, reply, isGroup, isAdmins, isBotAdmins, isOwner }) => {
+async (conn, mek, m, { from, reply, isGroup, isAdmins, isOwner }) => {
     try {
         if (!isGroup) return reply("🚫 This command is for group use only.");
         if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
-        if (!isBotAdmins) return reply("🚫 I need to be an admin to unlock the group.");
+
+        const botIsAdmin = await checkBotAdmin(conn, from);
+        if (!botIsAdmin) return reply(botNeedsAdminMsg(conn));
 
         await conn.groupSettingUpdate(from, 'not_announcement');
         await sendBranded(conn, from, mek, "🔓 *GROUP UNLOCKED*\n\n✅ Everyone can send messages now.");
@@ -120,113 +173,113 @@ async (conn, mek, m, { from, reply, isGroup, isAdmins, isBotAdmins, isOwner }) =
 });
 
 // ═════════════════════════════════════════════════════════════
-// 👑 PROMOTE COMMAND
+// 👑 PROMOTE
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "promote",
     alias: ["makeadmin", "admin"],
-    desc: "Promote a user to admin (reply to or mention them)",
+    desc: "Promote a user to admin",
     category: "group",
     react: "👑",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isBotAdmins, isOwner, quoted }) => {
+async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner, quoted }) => {
     try {
         if (!isGroup) return reply("🚫 This command is for group use only.");
         if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
-        if (!isBotAdmins) return reply("🚫 I need to be an admin to promote users.");
+
+        const botIsAdmin = await checkBotAdmin(conn, from);
+        if (!botIsAdmin) return reply(botNeedsAdminMsg(conn));
 
         const target = getTargetJid(quoted, mek, m);
         if (!target) return reply("❌ Please reply to a message or mention the user to promote.");
-
-        if (isBot(conn, target)) return reply("❌ I can't promote myself.");
+        if (isBotItself(conn, target)) return reply("❌ I can't promote myself.");
         if (isSender(sender, target)) return reply("❌ You can't promote yourself.");
 
         await conn.groupParticipantsUpdate(from, [target], 'promote');
         await sendBranded(conn, from, mek,
-            `👑 *PROMOTED*\n\n✅ @${target.split('@')[0]} is now an admin.`,
+            `👑 *PROMOTED*\n\n✅ @${numOf(target)} is now an admin.`,
             [target]
         );
     } catch (e) {
         console.error('[PROMOTE]', e.message);
-        reply(`❌ Failed to promote user: ${e.message}`);
+        reply(`❌ Failed to promote: ${e.message}`);
     }
 });
 
 // ═════════════════════════════════════════════════════════════
-// 📉 DEMOTE COMMAND
+// 📉 DEMOTE
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "demote",
     alias: ["removeadmin", "unadmin"],
-    desc: "Demote an admin (reply to or mention them)",
+    desc: "Demote an admin",
     category: "group",
     react: "📉",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isBotAdmins, isOwner, quoted }) => {
+async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner, quoted }) => {
     try {
         if (!isGroup) return reply("🚫 This command is for group use only.");
         if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
-        if (!isBotAdmins) return reply("🚫 I need to be an admin to demote users.");
+
+        const botIsAdmin = await checkBotAdmin(conn, from);
+        if (!botIsAdmin) return reply(botNeedsAdminMsg(conn));
 
         const target = getTargetJid(quoted, mek, m);
         if (!target) return reply("❌ Please reply to a message or mention the admin to demote.");
-
-        if (isBot(conn, target)) return reply("❌ I can't demote myself.");
+        if (isBotItself(conn, target)) return reply("❌ I can't demote myself.");
         if (isSender(sender, target)) return reply("❌ You can't demote yourself.");
 
         await conn.groupParticipantsUpdate(from, [target], 'demote');
         await sendBranded(conn, from, mek,
-            `📉 *DEMOTED*\n\n✅ @${target.split('@')[0]} is no longer an admin.`,
+            `📉 *DEMOTED*\n\n✅ @${numOf(target)} is no longer an admin.`,
             [target]
         );
     } catch (e) {
         console.error('[DEMOTE]', e.message);
-        reply(`❌ Failed to demote user: ${e.message}`);
+        reply(`❌ Failed to demote: ${e.message}`);
     }
 });
 
 // ═════════════════════════════════════════════════════════════
-// 👢 REMOVE COMMAND (KICK)
+// 👢 REMOVE
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "remove",
     alias: ["kick", "ban"],
-    desc: "Remove a user from the group (reply to or mention them)",
+    desc: "Remove a user from the group",
     category: "group",
     react: "👢",
     filename: __filename
 },
-async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isBotAdmins, isOwner, quoted }) => {
+async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isOwner, quoted }) => {
     try {
         if (!isGroup) return reply("🚫 This command is for group use only.");
         if (!isAdmins && !isOwner) return reply("🚫 Only group admins can use this command.");
-        if (!isBotAdmins) return reply("🚫 I need to be an admin to remove users.");
+
+        const botIsAdmin = await checkBotAdmin(conn, from);
+        if (!botIsAdmin) return reply(botNeedsAdminMsg(conn));
 
         const target = getTargetJid(quoted, mek, m);
         if (!target) return reply("❌ Please reply to a message or mention the user to remove.");
-
-        if (isBot(conn, target)) return reply("❌ I can't remove myself.");
+        if (isBotItself(conn, target)) return reply("❌ I can't remove myself.");
         if (isSender(sender, target)) return reply("❌ You can't remove yourself.");
 
-        // Optional: prevent removing other admins (only owner/superadmin can do that in WhatsApp)
-        // if target is admin, the API call will fail anyway, but we can give a nicer message.
+        // Prevent removing admins unless you're the owner
         try {
-            const groupMetadata = await conn.groupMetadata(from);
-            const found = groupMetadata.participants?.find(p => {
-                const pIdNum = (p.id || '').split('@')[0].split(':')[0];
-                const targetNum = String(target).split('@')[0].split(':')[0];
-                return pIdNum === targetNum;
-            });
+            const meta = await conn.groupMetadata(from);
+            const found = meta.participants?.find(p =>
+                numOf(p.id) === numOf(target) || numOf(p.lid) === numOf(target)
+            );
             if (found && (found.admin === 'admin' || found.admin === 'superadmin') && !isOwner) {
                 return reply("❌ Cannot remove another admin. Only the group creator can.");
             }
-        } catch { /* ignore metadata errors, try the kick anyway */ }
+        } catch {}
 
         await conn.groupParticipantsUpdate(from, [target], 'remove');
         await sendBranded(conn, from, mek,
-            `👢 *REMOVED*\n\n✅ @${target.split('@')[0]} has been removed from the group.`,
+            `👢 *REMOVED*\n\n✅ @${numOf(target)} has been removed from the group.`,
             [target]
         );
     } catch (e) {
@@ -235,3 +288,35 @@ async (conn, mek, m, { from, sender, reply, isGroup, isAdmins, isBotAdmins, isOw
     }
 });
 
+// ═════════════════════════════════════════════════════════════
+// 📋 HELP
+// ═════════════════════════════════════════════════════════════
+cmd({
+    pattern: "grouphelp",
+    alias: ["ghelp", "groupmenu"],
+    desc: "Show group management commands",
+    category: "group",
+    react: "📋",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    const menu =
+`📋 *GROUP MANAGEMENT*
+
+*🔒 Lock/Unlock*
+• .lock — Only admins can send
+• .unlock — Everyone can send
+
+*👑 Promote/Demote*
+• .promote — Make user admin
+• .demote — Remove admin
+
+*👢 Remove*
+• .remove — Kick from group
+
+*📌 Usage:*
+• Reply to the user's message, OR
+• Mention them: .promote @user`;
+
+    await sendBranded(conn, from, mek, menu);
+});
