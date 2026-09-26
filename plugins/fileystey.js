@@ -10,7 +10,7 @@ const config = require("../config"); // 👈 FIXED: was "../set"
 const os = require('os');
 
 // ========== BRANDING IMAGE ==========
-const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
+const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/njabuloimg3.png";
 
 // ========== CONTEXT INFO ==========
 function ctxInfo() {
@@ -56,17 +56,16 @@ async (conn, mek, m, { from, reply }) => {
         else if (ping < 1000) rating = '✅ Good';
         else if (ping < 2000) rating = '🐇 Okay';
 
-        const text =
-`🏓 *PONG!*
-
-⚡ *Speed:* ${ping} ms
-📊 *Rating:* ${rating}
-⏱️ *Uptime:* ${getFormattedUptime()}`;
+        const text =`╭─「 *QUEEN-ANIKA* 」
+│〕.
+│〕.⚡ *Speed:* ${ping} ms
+│〕.📊 *Rating:* ${rating}
+│〕.⏱️ *Uptime:* ${getFormattedUptime()}
+╰─────────〔🌸〕`;
 
         await conn.sendMessage(from, {
           image: { url: BRAND_IMAGE },
             caption : text,
-            edit: sent.key,
             contextInfo: ctxInfo()
         });
     } catch (e) {
@@ -92,13 +91,13 @@ async (conn, mek, m, { from, reply }) => {
         const hostMemUsed = ((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(2);
         const hostMemTotal = (os.totalmem() / 1024 / 1024).toFixed(2);
 
-        const text =
-`⏱️ *UPTIME STATUS*
-
-│ 🕒 *Running:* ${formattedUptime}
-│ 🖥️ *Platform:* ${os.platform()}
-│ 🤖 *Bot Memory:* ${botMemMB} MB
-│ 🖴 *Host Memory:* ${hostMemUsed} MB / ${hostMemTotal} MB (shared)`;
+        const text =`╭─「 *QUEEN-ANIKA* 」
+│〕.
+│〕.🕒 *Running:* ${formattedUptime}
+│〕.🖥️ *Platform:* ${os.platform()}
+│〕.🤖 *Bot Memory:* ${botMemMB} MB
+│〕.🖴 *Host Memory:* ${hostMemUsed} MB / ${hostMemTotal} MB (shared)
+╰─────────〔🌸〕`;
 
         await conn.sendMessage(from, {
             image: { url: BRAND_IMAGE },
@@ -128,13 +127,13 @@ async (conn, mek, m, { from, reply }) => {
         const hostMemUsed = ((os.totalmem() - os.freemem()) / 1024 / 1024).toFixed(2);
         const hostMemTotal = (os.totalmem() / 1024 / 1024).toFixed(2);
 
-        const text =
-`💚 *STATUS: ALIVE & ONLINE*
-
-│ ⏱️ *Uptime:* ${getFormattedUptime()}
-│ 🖥️ *Platform:* ${os.platform()} (${os.arch()})
-│ 🤖 *Bot Memory:* ${botMemMB} MB
-│ 🖴 *Host Memory:* ${hostMemUsed} MB / ${hostMemTotal} MB (shared)`;
+        const text =`╭─「 *QUEEN-ANIKA* 」
+│〕.
+│〕.⏱️ *Uptime:* ${getFormattedUptime()}
+│〕.🖥️ *Platform:* ${os.platform()} (${os.arch()})
+│〕.🤖 *Bot Memory:* ${botMemMB} MB
+│〕.🖴 *Host Memory:* ${hostMemUsed} MB / ${hostMemTotal} MB (shared)
+╰─────────〔🌸〕`;
 
         await conn.sendMessage(from, {
             image: { url: BRAND_IMAGE },
@@ -221,16 +220,14 @@ async (conn, mek, m, { from, reply }) => {
         // 🔧 CHANGE THIS to your actual repository URL
         const repoUrl = config.REPO_URL || "https://github.com/NjabuloJf/Queen-Anika";
 
-        const text =
-`📦 *QUEEN-ANIKA REPOSITORY*
-
-🔗 *Link:*
-${repoUrl}
-
-⭐ *Don't forget to star the repo if you like it!*
-
-━━━━━━━━━━━━━━━━━━━━
-*Powered By Njabulo Jb*`;
+        const text =`╭─「 *QUEEN-ANIKA* 」
+│〕.
+│〕.🔗 *Link:*
+│〕. Telegram bot
+│〕. ${repoUrl}
+│〕. Website njabulo-ai.vercel.app
+│〕.⭐ *Don't forget to star the repo if you like it!*
+╰─────────〔🌸〕`;
 
         await conn.sendMessage(from, {
             image: { url: BRAND_IMAGE },
