@@ -25,7 +25,7 @@ function ctxInfo() {
         },
         externalAdReply: {
             title: "Queen-Anika",
-            body: "Powered by Njabulo Jb",
+            body: "Ｑｕｅｅｎ-Ａｎｉｋａ ｂｏｔ",
             thumbnailUrl: "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png",
             mediaType: 1,
             renderLargerThumbnail: false,
