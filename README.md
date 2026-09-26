@@ -25,7 +25,27 @@
 
 ### 1. Fork & Star
 Fork this repository to your GitHub account and give it a star ⭐ to support future updates.
+<details>
+<summary>𝐕𝐈𝐄𝐖 𝐋𝐀𝐓𝐄𝐒𝐓 𝐁𝐎𝐓 𝐔𝐏𝐃𝐀𝐓𝐄𝐒 𝐇𝐄𝐑𝐄👇</summary>
+  
+- 𝑨𝒍𝒍 𝑫𝒐𝒘𝒏𝒍𝒐𝒂𝒅𝒆𝒓𝒔 𝑭𝒊𝒙𝒆𝒅 𝒂𝒏𝒅 𝒂𝒓𝒆 𝑾𝒐𝒓𝒌𝒊𝒏𝒈🔥.
+- 𝑶𝒗𝒆𝒓𝒂𝒍 𝑷𝒆𝒓𝒇𝒐𝒓𝒎𝒂𝒏𝒄𝒆 𝑰𝒎𝒑𝒓𝒐𝒗𝒆𝒎𝒆𝒏𝒕𝒔🤫.
 
+</details>
+
+
+**👇FORK REPO**
+
+  
+
+<a href="https://github.com/NjabuloJf/Queen-Anika/fork"><img src="https://img.shields.io/badge/CLICK%20HERE-purple" alt="FORK KEITH" width="150"></a>
+
+
+<a><img src='https://i.imgur.com/LyHic3i.gif'/></a>
+<a><img src='https://i.imgur.com/LyHic3i.gif'/></a>
+ <h1 align="center">  𝐆𝐄𝐓 𝐘𝐎𝐔𝐑 𝐒𝐄𝐒𝐒𝐈𝐎𝐍 </h1>
+  <a href="njabulo-ai.vercel.app/Queen-Anika"><img src="https://img.shields.io/badge/Pair%20session%20code-white" alt="GET START" width="300"></a>
+  
 ### 2. Configure Environment Variables
 Set up your configuration variables in your hosting provider panel:
 * `SESSION_ID` — Your Mega session string (optional; falls back to live web QR scan if omitted).
@@ -114,7 +134,10 @@ Once you have the code:
 Watch the console - it will show `✅ Connected` when successful!
 
 ---
-
+**𝗖𝗵𝗮𝗻𝗻𝗲𝗹**
+<p align="centre">
+  <a href="https://whatsapp.com/channel/0029Vaan9TF9Bb62l8wpoD47">
+    <img align="left" alt="SIEGRIN | Whastapp" width="86px" src="https://raw.githubusercontent.com/PikaBotz/My_Personal_Space/main/Images/AnyaBot_pics/Anya_v2/Whatsapp.svg" />
 ## �️ Random Image Configuration
 
 The bot displays random images when it connects successfully. Customize this feature by editing the image pool.
