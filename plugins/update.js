@@ -134,7 +134,7 @@ async (conn, mek, m, { from, reply, args }) => {
             try {
                 await conn.sendMessage(from, {
                     image: validImages[i].buffer,
-                    caption: `📸 *Image ${i + 1}/${validImages.length}*\n🔍 Search: ${query}\n\n🔗 ${validImages[i].directLink}`,
+                    caption: `📸 *Image ${i + 1}/${validImages.length}*\n🔍 Search: ${query}\n\n🔗 `,
                     contextInfo: ctxInfo()
                 }, { quoted: mek });
 
