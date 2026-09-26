@@ -1,17 +1,13 @@
 /**
  * ai.js
- * AI commands: .gpt and .meta
- * Uses Google Gemini API.
- * API key loaded from config.js or environment — NOT hardcoded.
- * Queen-Anika branding.
+ * AI commands: .ai, .gpt, .meta
+ * Uses fallback API chain (Mistral + Llama workers).
+ * cmd() handler. No fancy font. Queen-Anika branding.
  */
 
 const { cmd } = require('../command');
 const config = require("../config");
-const axios = require("axios");
-
-// ========== API KEY (loaded safely) ==========
-const GEMINI_API_KEY = config.GEMINI_API_KEY
+const axios = require('axios');
 
 // ========== BRANDING IMAGE ==========
 const BRAND_IMAGE = "https://raw.githubusercontent.com/NjabuloJf/njabulo-data/main/njabuloimg/Queen-Anika.png";
@@ -36,6 +32,7 @@ function ctxInfo() {
     };
 }
 
+// ========== HELPER: Send branded ==========
 async function sendBranded(conn, dest, ms, text) {
     await conn.sendMessage(dest, {
         image: { url: BRAND_IMAGE },
@@ -44,117 +41,103 @@ async function sendBranded(conn, dest, ms, text) {
     }, { quoted: ms });
 }
 
-// ========== GEMINI MODELS (fallback chain) ==========
-const GEMINI_MODELS = [
-    "gemini-2.0-flash",
-    "gemini-1.5-flash",
-    "gemini-flash-latest",
-    "gemini-2.5-flash"
+// ═════════════════════════════════════════════════════════════
+// 🤖 AI APIS (fallback chain)
+// ═════════════════════════════════════════════════════════════
+const AI_APIS = [
+    async (q) => {
+        const url = `https://mistral.stacktoy.workers.dev/?apikey=Suhail&text=${encodeURIComponent(q)}`;
+        const { data } = await axios.get(url, { timeout: 15000 });
+        return data?.data?.response || data?.response || null;
+    },
+    async (q) => {
+        const url = `https://llama.gtech-apiz.workers.dev/?apikey=Suhail&text=${encodeURIComponent(q)}`;
+        const { data } = await axios.get(url, { timeout: 15000 });
+        return data?.data?.response || data?.response || null;
+    },
+    async (q) => {
+        const url = `https://mistral.gtech-apiz.workers.dev/?apikey=Suhail&text=${encodeURIComponent(q)}`;
+        const { data } = await axios.get(url, { timeout: 15000 });
+        return data?.data?.response || data?.response || null;
+    }
 ];
 
-// ========== CALL GEMINI ==========
-async function callGemini(prompt, modelIndex = 0) {
-    if (!GEMINI_API_KEY) {
-        throw new Error("GEMINI_API_KEY is missing in config.js. Get one free at https://aistudio.google.com/apikey");
-    }
-
-    const model = GEMINI_MODELS[modelIndex];
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
-    console.log(`[AI] Trying ${model}...`);
-
-    try {
-        const { data } = await axios.post(
-            url,
-            {
-                contents: [
-                    {
-                        role: "user",
-                        parts: [{ text: prompt }]
-                    }
-                ],
-                generationConfig: {
-                    temperature: 0.9,
-                    maxOutputTokens: 1500,
-                    topP: 0.95
-                },
-                safetySettings: [
-                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-                ]
-            },
-            {
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-goog-api-key": GEMINI_API_KEY
-                },
-                timeout: 60000
+// ========== AI FETCHER WITH FALLBACK ==========
+async function askAI(query) {
+    for (const api of AI_APIS) {
+        try {
+            console.log(`[AI] Trying API...`);
+            const response = await api(query);
+            if (response && typeof response === 'string' && response.trim().length > 0) {
+                console.log(`[AI] ✅ Success`);
+                return response.trim();
             }
-        );
-
-        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (text && text.trim()) {
-            console.log(`[AI] ✅ Success with ${model}`);
-            return text.trim();
+        } catch (error) {
+            console.log(`[AI] ❌ Failed: ${error.message}`);
+            continue;
         }
-
-        const finishReason = data?.candidates?.[0]?.finishReason;
-        const blockReason = data?.promptFeedback?.blockReason;
-        console.log(`[AI] No text. finishReason=${finishReason}, blockReason=${blockReason}`);
-        throw new Error(`No response (${finishReason || blockReason || 'unknown'})`);
-
-    } catch (e) {
-        const status = e?.response?.status;
-        const errMsg = e?.response?.data?.error?.message || e.message;
-        console.log(`[AI] ${model} failed (${status}): ${errMsg}`);
-
-        // Try next model in chain
-        if (modelIndex + 1 < GEMINI_MODELS.length) {
-            return callGemini(prompt, modelIndex + 1);
-        }
-
-        if (status === 400) throw new Error("Invalid API key or request format.");
-        if (status === 401 || status === 403) throw new Error("API key rejected. Get a valid key from https://aistudio.google.com/apikey");
-        if (status === 429) throw new Error("Rate limit reached. Wait a minute and try again.");
-        if (status === 503) throw new Error("Gemini is overloaded. Try again in a moment.");
-        throw new Error(`AI error: ${errMsg}`);
     }
+    return "⚠️ AI service is currently unavailable. Please try again later.";
 }
 
 // ========== HANDLE AI COMMAND ==========
 async function handleAI(conn, mek, from, reply, args, label) {
-    const input = (args || []).join(" ").trim();
+    const query = (args || []).join(" ").trim();
 
-    if (!input) {
-        return reply(`❌ Usage: .${label.toLowerCase()} <your question>\n\nExample: .${label.toLowerCase()} what is JavaScript?`);
+    if (!query) {
+        return reply(
+`❌ *Usage:* .${label.toLowerCase()} <message>
+
+📌 Example:
+.${label.toLowerCase()} What is coding?`
+        );
     }
 
-    console.log(`[${label}] Input: "${input}"`);
+    console.log(`[${label}] Input: "${query}"`);
+
+    try { await conn.sendMessage(from, { react: { text: "⌛", key: mek.key } }); } catch {}
+    await conn.sendPresenceUpdate('composing', from);
 
     try {
-        await conn.sendMessage(from, { react: { text: "⌛", key: mek.key } });
-    } catch {}
+        let response = await askAI(query);
 
-    try {
-        const answer = await callGemini(input);
-        await sendBranded(conn, from, mek, `🤖 *${label}*\n\n${answer}`);
+        // Truncate if too long
+        if (response.length > 3800) {
+            response = response.substring(0, 3770) + "\n\n...[truncated]";
+        }
+
+        await sendBranded(conn, from, mek, `🤖 *${label}*\n\n${response}`);
+
         try { await conn.sendMessage(from, { react: { text: "✅", key: mek.key } }); } catch {}
-    } catch (e) {
-        console.error(`[${label}] Error:`, e.message);
-        reply(`❌ ${e.message}`);
+    } catch (error) {
+        console.error(`[${label}] Error:`, error.message);
+        reply("❌ Error: Could not process your request. Please try again.");
         try { await conn.sendMessage(from, { react: { text: "❌", key: mek.key } }); } catch {}
     }
 }
+
+// ═════════════════════════════════════════════════════════════
+// 🧠 .ai COMMAND
+// ═════════════════════════════════════════════════════════════
+cmd({
+    pattern: "ai",
+    alias: ["artificial", "intelligence"],
+    desc: "Ask AI anything",
+    category: "AI",
+    react: "🧠",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply, args }) => {
+    await handleAI(conn, mek, from, reply, args, "AI");
+});
 
 // ═════════════════════════════════════════════════════════════
 // 🤖 .gpt COMMAND
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "gpt",
-    alias: ["ai", "chatgpt", "ask"],
-    desc: "Ask AI anything (Gemini backend)",
+    alias: ["chatgpt", "gptai", "openai"],
+    desc: "Ask GPT AI anything",
     category: "AI",
     react: "🤖",
     filename: __filename
@@ -168,40 +151,12 @@ async (conn, mek, m, { from, reply, args }) => {
 // ═════════════════════════════════════════════════════════════
 cmd({
     pattern: "meta",
-    alias: ["metaai", "llama"],
-    desc: "Ask Meta AI anything (Gemini backend)",
+    alias: ["metaai", "llama", "ilama"],
+    desc: "Ask Meta AI (Llama) anything",
     category: "AI",
     react: "🦙",
     filename: __filename
 },
 async (conn, mek, m, { from, reply, args }) => {
     await handleAI(conn, mek, from, reply, args, "META AI");
-});
-
-// ═════════════════════════════════════════════════════════════
-// 📋 .aihelp COMMAND
-// ═════════════════════════════════════════════════════════════
-cmd({
-    pattern: "aihelp",
-    alias: ["aimenu", "aicommands"],
-    desc: "AI commands help menu",
-    category: "AI",
-    react: "📋",
-    filename: __filename
-},
-async (conn, mek, m, { from, reply }) => {
-    const menu =
-`🤖 *AI COMMANDS*
-
-• .gpt <question> — Ask AI
-• .meta <question> — Ask Meta AI
-
-*Examples:*
-• .gpt what is coding
-• .meta tell me a joke
-• .ai hello
-
-_Powered by Queen-Anika 🩷_`;
-
-    await sendBranded(conn, from, mek, menu);
 });
