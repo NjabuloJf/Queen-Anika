@@ -242,3 +242,66 @@ ${repoUrl}
         reply(`❌ Error: ${e.message}`);
     }
 });
+
+
+            cmd({
+    pattern: "menu",
+    alias: ["repository", "github", "source"],
+    desc: "Get the bot's GitHub repository link.",
+    category: "tools",
+    react: "📦",
+    filename: __filename
+},
+async (conn, mek, m, { from, reply }) => {
+    try {
+        // 🔧 CHANGE THIS to your actual repository URL
+        const repoUrl = config.REPO_URL || "https://github.com/NjabuloJf/Queen-Anika";
+
+        const text =`╭─「 *QUEEN-ANIKA* 」
+」
+」〔👤 *User:* ${pushname || 'User'}
+」〔⏱️ *Uptime:* ${getFormattedUptime()}
+」〔🔧 *Prefix:* ${config.PREFIX || '.'}
+╰─────」
+╭─「 *GROUP* 」
+│〕 .antilink
+│〕 .antilinkdelete
+│〕 .antilinkoff
+│〕 .antilinkremove
+│〕 .antilinkwarn
+│〕 .goodbye
+│〕 .resetwarns
+│〕 .welcome
+╰─────」
+╭─「 *TOOLS* 」
+│〕 .getpp
+│〕 .alive
+│〕 .menu
+│〕 .ping
+│〕 .repo
+│〕 .shazam
+│〕 .uptime
+╰─────」
+╭─「 *DOWNLOAD* 」
+│〕.apk
+│〕.facebook
+│〕.img
+│〕.instagram
+│〕.play
+│〕.playstore
+│〕.tiktok
+│〕.lyrics
+│〕.video
+│〕.youtube
+╰─────────〔🌸〕`;
+
+        await conn.sendMessage(from, {
+            image: { url: BRAND_IMAGE },
+            caption: text,
+            contextInfo: ctxInfo()
+        }, { quoted: mek });
+    } catch (e) {
+        console.error(e);
+        reply(`❌ Error: ${e.message}`);
+    }
+});
